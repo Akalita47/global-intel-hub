@@ -56,7 +56,7 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
       scrollWheelZoom: true,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     }).addTo(mapRef.current);
 
@@ -132,6 +132,6 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
   }, [selectedItem]);
 
   return (
-    <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#0a0f1a' }} />
+    <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
   );
 }
