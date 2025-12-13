@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { FilterState } from '@/types/news';
-import { regions, categories, sources } from '@/data/mockNews';
+import { FilterState, ThreatLevel, ConfidenceLevel, ActorType } from '@/types/news';
+import { regions, categories, sources, threatLevelsList, confidenceLevelsList, actorTypesList } from '@/data/mockNews';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,11 +10,13 @@ import {
   Search, 
   Filter, 
   X, 
-  Calendar,
   Globe,
   Tag,
   Radio,
-  RotateCcw
+  RotateCcw,
+  Shield,
+  Users,
+  Clock
 } from 'lucide-react';
 
 interface FilterPanelProps {
@@ -33,9 +35,14 @@ const categoryColors: Record<string, string> = {
   technology: 'bg-intel-purple/20 text-purple-400 border-intel-purple/30',
 };
 
-export function FilterPanel({ filters, onFiltersChange, totalResults, filteredResults }: FilterPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+const threatColors: Record<ThreatLevel, string> = {
+  low: 'bg-green-500/20 text-green-400 border-green-500/30',
+  elevated: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  critical: 'bg-red-500/20 text-red-400 border-red-500/30',
+};
 
+export function FilterPanel({ filters, onFiltersChange, totalResults, filteredResults }: FilterPanelProps) {
   const toggleCategory = (category: string) => {
     const newCategories = filters.categories.includes(category)
       ? filters.categories.filter((c) => c !== category)
@@ -57,6 +64,27 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
     onFiltersChange({ ...filters, sources: newSources });
   };
 
+  const toggleThreatLevel = (level: ThreatLevel) => {
+    const newLevels = filters.threatLevels.includes(level)
+      ? filters.threatLevels.filter((l) => l !== level)
+      : [...filters.threatLevels, level];
+    onFiltersChange({ ...filters, threatLevels: newLevels });
+  };
+
+  const toggleConfidenceLevel = (level: ConfidenceLevel) => {
+    const newLevels = filters.confidenceLevels.includes(level)
+      ? filters.confidenceLevels.filter((l) => l !== level)
+      : [...filters.confidenceLevels, level];
+    onFiltersChange({ ...filters, confidenceLevels: newLevels });
+  };
+
+  const toggleActorType = (type: ActorType) => {
+    const newTypes = filters.actorTypes.includes(type)
+      ? filters.actorTypes.filter((t) => t !== type)
+      : [...filters.actorTypes, type];
+    onFiltersChange({ ...filters, actorTypes: newTypes });
+  };
+
   const resetFilters = () => {
     onFiltersChange({
       dateRange: { from: null, to: null },
@@ -66,6 +94,10 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
       sources: [],
       searchQuery: '',
       categories: [],
+      threatLevels: [],
+      confidenceLevels: [],
+      actorTypes: [],
+      timeRange: '24h',
     });
   };
 
@@ -73,6 +105,9 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
     filters.categories.length > 0 || 
     filters.regions.length > 0 || 
     filters.sources.length > 0 || 
+    filters.threatLevels.length > 0 ||
+    filters.confidenceLevels.length > 0 ||
+    filters.actorTypes.length > 0 ||
     filters.searchQuery.length > 0;
 
   return (
@@ -177,6 +212,78 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
                   onClick={() => toggleRegion(region)}
                 >
                   {region}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Threat Levels */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground flex items-center gap-2">
+              <Shield className="w-3 h-3" />
+              Threat Level
+            </Label>
+            <div className="flex flex-wrap gap-1.5">
+              {threatLevelsList.map((level) => (
+                <Badge
+                  key={level}
+                  variant="outline"
+                  className={`cursor-pointer text-xs capitalize transition-all ${
+                    filters.threatLevels.includes(level)
+                      ? threatColors[level]
+                      : 'bg-secondary/30 text-muted-foreground border-border hover:bg-secondary/50'
+                  }`}
+                  onClick={() => toggleThreatLevel(level)}
+                >
+                  {level}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Range */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground flex items-center gap-2">
+              <Clock className="w-3 h-3" />
+              Time Range
+            </Label>
+            <div className="flex flex-wrap gap-1.5">
+              {(['1h', '24h', '7d'] as const).map((range) => (
+                <Badge
+                  key={range}
+                  variant="outline"
+                  className={`cursor-pointer text-xs transition-all ${
+                    filters.timeRange === range
+                      ? 'bg-primary/20 text-primary border-primary/30'
+                      : 'bg-secondary/30 text-muted-foreground border-border hover:bg-secondary/50'
+                  }`}
+                  onClick={() => onFiltersChange({ ...filters, timeRange: range })}
+                >
+                  {range === '1h' ? 'Last Hour' : range === '24h' ? 'Last 24h' : 'Last 7 Days'}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Actor Types */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground flex items-center gap-2">
+              <Users className="w-3 h-3" />
+              Actor Type
+            </Label>
+            <div className="flex flex-wrap gap-1.5">
+              {actorTypesList.map((type) => (
+                <Badge
+                  key={type}
+                  variant="outline"
+                  className={`cursor-pointer text-xs capitalize transition-all ${
+                    filters.actorTypes.includes(type)
+                      ? 'bg-intel-purple/20 text-purple-400 border-intel-purple/30'
+                      : 'bg-secondary/30 text-muted-foreground border-border hover:bg-secondary/50'
+                  }`}
+                  onClick={() => toggleActorType(type)}
+                >
+                  {type}
                 </Badge>
               ))}
             </div>
