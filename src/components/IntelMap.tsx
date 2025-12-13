@@ -1,8 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
-import { NewsItem } from '@/types/news';
-import { formatDistanceToNow } from 'date-fns';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
+import 'leaflet.heat';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
+import { NewsItem, ThreatLevel, AlertZone } from '@/types/news';
+import { formatDistanceToNow } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Flame, MapPin, Download, FileImage, AlertTriangle } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // Fix for default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -18,6 +28,15 @@ interface IntelMapProps {
   selectedItem: NewsItem | null;
 }
 
+// Threat level colors
+const threatColors: Record<ThreatLevel, string> = {
+  low: '#22c55e',      // Green
+  elevated: '#eab308', // Yellow
+  high: '#f97316',     // Orange
+  critical: '#ef4444', // Red
+};
+
+// Category colors for reference
 const categoryColors: Record<string, string> = {
   security: '#14b8a6',
   diplomacy: '#3b82f6',
@@ -27,21 +46,60 @@ const categoryColors: Record<string, string> = {
   technology: '#8b5cf6',
 };
 
-const createCustomIcon = (category: string) => {
-  const color = categoryColors[category] || '#14b8a6';
+// Get severity weight for heatmap
+const getSeverityWeight = (threatLevel: ThreatLevel): number => {
+  switch (threatLevel) {
+    case 'critical': return 1.0;
+    case 'high': return 0.75;
+    case 'elevated': return 0.5;
+    case 'low': return 0.25;
+    default: return 0.25;
+  }
+};
+
+// Get recency weight (more recent = higher weight)
+const getRecencyWeight = (publishedAt: string): number => {
+  const hours = (Date.now() - new Date(publishedAt).getTime()) / (1000 * 60 * 60);
+  if (hours < 1) return 1.0;
+  if (hours < 6) return 0.8;
+  if (hours < 24) return 0.6;
+  if (hours < 48) return 0.4;
+  return 0.2;
+};
+
+// Create custom icon based on threat level
+const createThreatIcon = (threatLevel: ThreatLevel, isCritical: boolean = false) => {
+  const color = threatColors[threatLevel];
+  const size = threatLevel === 'critical' ? 24 : threatLevel === 'high' ? 20 : 16;
+  const pulseClass = isCritical ? 'critical-pulse' : '';
+  
   return L.divIcon({
-    className: 'custom-marker-container',
-    html: `<div style="width:20px;height:20px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.9);box-shadow:0 0 10px ${color}80,0 2px 6px rgba(0,0,0,0.3);"></div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -12],
+    className: `custom-marker-container ${pulseClass}`,
+    html: `
+      <div class="threat-marker ${threatLevel}" style="
+        width: ${size}px;
+        height: ${size}px;
+        background: ${color};
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.9);
+        box-shadow: 0 0 ${isCritical ? '20px' : '10px'} ${color}80, 0 2px 6px rgba(0,0,0,0.3);
+        ${isCritical ? 'animation: critical-pulse 1.5s infinite;' : ''}
+      "></div>
+    `,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
   });
 };
 
 export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markersClusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const heatLayerRef = useRef<any>(null);
+  const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [alertZones, setAlertZones] = useState<AlertZone[]>([]);
 
   // Initialize map
   useEffect(() => {
@@ -56,9 +114,107 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
       scrollWheelZoom: true,
     });
 
+    // Light map tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     }).addTo(mapRef.current);
+
+    // Initialize marker cluster group
+    markersClusterRef.current = L.markerClusterGroup({
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      iconCreateFunction: (cluster) => {
+        const childCount = cluster.getChildCount();
+        const markers = cluster.getAllChildMarkers();
+        
+        // Calculate dominant threat level
+        let criticalCount = 0;
+        let highCount = 0;
+        markers.forEach((m: any) => {
+          const item = m.options.newsItem as NewsItem;
+          if (item?.threatLevel === 'critical') criticalCount++;
+          else if (item?.threatLevel === 'high') highCount++;
+        });
+
+        let clusterColor = '#22c55e';
+        if (criticalCount > 0) clusterColor = '#ef4444';
+        else if (highCount > 0) clusterColor = '#f97316';
+        else if (childCount > 5) clusterColor = '#eab308';
+
+        return L.divIcon({
+          html: `<div style="
+            background: ${clusterColor};
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            border: 3px solid white;
+            box-shadow: 0 0 15px ${clusterColor}80;
+          ">${childCount}</div>`,
+          className: 'custom-cluster-icon',
+          iconSize: L.point(40, 40),
+        });
+      },
+    });
+
+    mapRef.current.addLayer(markersClusterRef.current);
+
+    // Initialize draw controls for alert zones
+    drawnItemsRef.current = new L.FeatureGroup();
+    mapRef.current.addLayer(drawnItemsRef.current);
+
+    const drawControl = new L.Control.Draw({
+      position: 'topright',
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          shapeOptions: {
+            color: '#14b8a6',
+            fillOpacity: 0.2,
+          },
+        },
+        circle: {
+          shapeOptions: {
+            color: '#14b8a6',
+            fillOpacity: 0.2,
+          },
+        },
+        rectangle: false,
+        circlemarker: false,
+        marker: false,
+        polyline: false,
+      },
+      edit: {
+        featureGroup: drawnItemsRef.current,
+      },
+    });
+
+    mapRef.current.addControl(drawControl);
+
+    // Handle draw events
+    mapRef.current.on(L.Draw.Event.CREATED, (e: any) => {
+      const layer = e.layer;
+      drawnItemsRef.current?.addLayer(layer);
+      
+      const newZone: AlertZone = {
+        id: `zone-${Date.now()}`,
+        type: e.layerType === 'circle' ? 'circle' : 'polygon',
+        coordinates: e.layerType === 'circle' ? layer.getLatLng() : layer.getLatLngs()[0],
+        radius: e.layerType === 'circle' ? layer.getRadius() : undefined,
+        name: `Alert Zone ${alertZones.length + 1}`,
+        rules: [],
+        createdAt: new Date().toISOString(),
+      };
+      
+      setAlertZones(prev => [...prev, newZone]);
+    });
 
     return () => {
       if (mapRef.current) {
@@ -70,21 +226,25 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
 
   // Update markers when newsItems change
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !markersClusterRef.current) return;
 
     // Clear existing markers
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
+    markersClusterRef.current.clearLayers();
 
     // Add new markers
     newsItems.forEach((item) => {
       const marker = L.marker([item.lat, item.lon], {
-        icon: createCustomIcon(item.category),
-      });
+        icon: createThreatIcon(item.threatLevel, item.threatLevel === 'critical'),
+        newsItem: item,
+      } as any);
+
+      const threatColor = threatColors[item.threatLevel];
+      const confidenceColor = item.confidenceLevel === 'verified' ? '#22c55e' : 
+                              item.confidenceLevel === 'developing' ? '#eab308' : '#ef4444';
 
       const popupContent = `
-        <div style="font-family: system-ui, sans-serif; max-width: 280px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <div style="font-family: system-ui, sans-serif; max-width: 300px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
             <span style="
               padding: 2px 8px;
               border-radius: 4px;
@@ -92,9 +252,19 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
               font-weight: 600;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              background: ${categoryColors[item.category]}30;
-              color: ${categoryColors[item.category]};
-            ">${item.category}</span>
+              background: ${threatColor}30;
+              color: ${threatColor};
+            ">${item.threatLevel}</span>
+            <span style="
+              padding: 2px 8px;
+              border-radius: 4px;
+              font-size: 10px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              background: ${confidenceColor}30;
+              color: ${confidenceColor};
+            ">${item.confidenceLevel}</span>
             <span style="font-size: 11px; color: #666;">
               ${formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}
             </span>
@@ -105,9 +275,9 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
           <p style="font-size: 11px; color: #555; margin: 0 0 10px 0; line-height: 1.4;">
             ${item.summary.slice(0, 120)}...
           </p>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
             <span style="font-size: 10px; font-family: monospace; color: #777;">
-              ${item.source} • ${Math.round(item.confidenceScore * 100)}% conf
+              ${item.source} • ${item.country}
             </span>
             <a href="${item.url}" target="_blank" rel="noopener" style="
               font-size: 11px;
@@ -118,12 +288,57 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
         </div>
       `;
 
-      marker.bindPopup(popupContent, { maxWidth: 300 });
+      marker.bindPopup(popupContent, { maxWidth: 320 });
       marker.on('click', () => onSelectItem(item));
-      marker.addTo(mapRef.current!);
-      markersRef.current.push(marker);
+      markersClusterRef.current!.addLayer(marker);
     });
   }, [newsItems, onSelectItem]);
+
+  // Toggle heatmap
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (showHeatmap) {
+      // Hide markers
+      if (markersClusterRef.current) {
+        mapRef.current.removeLayer(markersClusterRef.current);
+      }
+
+      // Create heatmap data
+      const heatData = newsItems.map((item) => {
+        const severityWeight = getSeverityWeight(item.threatLevel);
+        const recencyWeight = getRecencyWeight(item.publishedAt);
+        const intensity = (severityWeight + recencyWeight) / 2;
+        return [item.lat, item.lon, intensity] as [number, number, number];
+      });
+
+      // Add heatmap layer
+      heatLayerRef.current = (L as any).heatLayer(heatData, {
+        radius: 30,
+        blur: 20,
+        maxZoom: 10,
+        max: 1.0,
+        gradient: {
+          0.2: '#22c55e',
+          0.4: '#eab308',
+          0.6: '#f97316',
+          0.8: '#ef4444',
+          1.0: '#dc2626',
+        },
+      }).addTo(mapRef.current);
+    } else {
+      // Remove heatmap
+      if (heatLayerRef.current && mapRef.current) {
+        mapRef.current.removeLayer(heatLayerRef.current);
+        heatLayerRef.current = null;
+      }
+
+      // Show markers
+      if (markersClusterRef.current && mapRef.current) {
+        mapRef.current.addLayer(markersClusterRef.current);
+      }
+    }
+  }, [showHeatmap, newsItems]);
 
   // Fly to selected item
   useEffect(() => {
@@ -131,7 +346,111 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
     mapRef.current.flyTo([selectedItem.lat, selectedItem.lon], 6, { duration: 1.5 });
   }, [selectedItem]);
 
+  // Export functions
+  const handleExportImage = useCallback(async () => {
+    if (!mapContainerRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(mapContainerRef.current, {
+        useCORS: true,
+        allowTaint: true,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `intel-map-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  }, []);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!mapContainerRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(mapContainerRef.current, {
+        useCORS: true,
+        allowTaint: true,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      const imgWidth = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`intel-map-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+    }
+  }, []);
+
   return (
-    <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
+    <div className="relative h-full w-full">
+      {/* Map container */}
+      <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
+      
+      {/* Control Panel */}
+      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+        <Button
+          variant={showHeatmap ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowHeatmap(!showHeatmap)}
+          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
+        >
+          <Flame className="w-4 h-4 mr-2" />
+          {showHeatmap ? 'Show Markers' : 'Show Heatmap'}
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportImage}
+          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
+        >
+          <FileImage className="w-4 h-4 mr-2" />
+          Export Image
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportPDF}
+          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export PDF
+        </Button>
+      </div>
+
+      {/* Legend */}
+      <div className="absolute bottom-8 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-lg border border-border p-3 shadow-lg">
+        <div className="text-xs font-semibold mb-2 text-foreground">Threat Levels</div>
+        <div className="flex flex-col gap-1.5">
+          {Object.entries(threatColors).map(([level, color]) => (
+            <div key={level} className="flex items-center gap-2">
+              <div 
+                className={`w-3 h-3 rounded-full ${level === 'critical' ? 'animate-pulse' : ''}`}
+                style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}
+              />
+              <span className="text-xs text-muted-foreground capitalize">{level}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Alert Zones Counter */}
+      {alertZones.length > 0 && (
+        <div className="absolute bottom-8 right-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-lg border border-border p-3 shadow-lg">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-intel-amber" />
+            <span className="text-xs font-medium text-foreground">
+              {alertZones.length} Alert Zone{alertZones.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
