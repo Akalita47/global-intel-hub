@@ -7,7 +7,7 @@ import { IntelMap } from '@/components/IntelMap';
 import { NewsList } from '@/components/NewsList';
 import { TimelineView } from '@/components/TimelineView';
 import { NewsDetail } from '@/components/NewsDetail';
-import { RiskSummary } from '@/components/RiskSummary';
+
 
 const initialFilters: FilterState = {
   dateRange: { from: null, to: null },
@@ -116,8 +116,6 @@ export default function Dashboard() {
                   onSelectItem={setSelectedItem}
                   selectedItem={selectedItem}
                 />
-                {/* Risk Summary Widget */}
-                <RiskSummary newsItems={filteredNews} />
               </div>
             )}
             {viewMode === 'list' && (

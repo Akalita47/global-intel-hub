@@ -27,7 +27,10 @@ export interface NewsItem {
 export interface AlertZone {
   id: string;
   type: 'circle' | 'polygon';
+  coordinates: any;
+  radius?: number;
   name: string;
+  rules: string[];
   createdAt: string;
 }
 
