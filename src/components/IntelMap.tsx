@@ -391,54 +391,6 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
       {/* Map container */}
       <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
       
-      {/* Control Panel */}
-      <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
-        <Button
-          variant={showHeatmap ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setShowHeatmap(!showHeatmap)}
-          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
-        >
-          <Flame className="w-4 h-4 mr-2" />
-          {showHeatmap ? 'Show Markers' : 'Show Heatmap'}
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExportImage}
-          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
-        >
-          <FileImage className="w-4 h-4 mr-2" />
-          Export Image
-        </Button>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExportPDF}
-          className="bg-background/90 backdrop-blur-sm border-border shadow-lg"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Export PDF
-        </Button>
-      </div>
-
-      {/* Legend */}
-      <div className="absolute bottom-8 left-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-lg border border-border p-3 shadow-lg">
-        <div className="text-xs font-semibold mb-2 text-foreground">Threat Levels</div>
-        <div className="flex flex-col gap-1.5">
-          {Object.entries(threatColors).map(([level, color]) => (
-            <div key={level} className="flex items-center gap-2">
-              <div 
-                className={`w-3 h-3 rounded-full ${level === 'critical' ? 'animate-pulse' : ''}`}
-                style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}80` }}
-              />
-              <span className="text-xs text-muted-foreground capitalize">{level}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Alert Zones Counter */}
       {alertZones.length > 0 && (
