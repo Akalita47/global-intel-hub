@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3, Clock } from 'lucide-react';
+import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3, Clock, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -15,6 +15,8 @@ import { CreateNewsDialog } from '@/components/CreateNewsDialog';
 import { CreateNewsItemInput } from '@/hooks/useNewsItems';
 import { ExportMenu } from '@/components/ExportMenu';
 import { NewsItem } from '@/types/news';
+import { RoleBadge } from '@/components/RoleBadge';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -28,6 +30,7 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { role } = useUserRole();
 
   const handleSignOut = async () => {
     await signOut();
@@ -68,12 +71,23 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
 
       {/* Right section */}
       <div className="flex items-center gap-2">
+        <RoleBadge role={role} />
+        
         {onCreateNews && (
           <CreateNewsDialog onCreate={onCreateNews} />
         )}
         {newsItems.length > 0 && (
           <ExportMenu items={newsItems} filename="intel-report" />
         )}
+        <Button 
+          variant={location.pathname === '/' ? 'secondary' : 'ghost'}
+          size="icon" 
+          className="h-8 w-8"
+          onClick={() => navigate('/')}
+          title="Dashboard"
+        >
+          <Home className="w-4 h-4" />
+        </Button>
         <Button 
           variant={location.pathname === '/timeline' ? 'secondary' : 'ghost'}
           size="icon" 
@@ -109,7 +123,10 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">Agent Profile</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">Agent Profile</p>
+                  <RoleBadge role={role} />
+                </div>
                 <p className="text-xs text-muted-foreground truncate">
                   {user?.email}
                 </p>
