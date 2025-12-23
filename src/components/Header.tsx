@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3 } from 'lucide-react';
+import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,17 +13,21 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { CreateNewsDialog } from '@/components/CreateNewsDialog';
 import { CreateNewsItemInput } from '@/hooks/useNewsItems';
+import { ExportMenu } from '@/components/ExportMenu';
+import { NewsItem } from '@/types/news';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
   showSidebar: boolean;
   onCreateNews?: (input: CreateNewsItemInput) => Promise<unknown>;
+  newsItems?: NewsItem[];
 }
 
-export function Header({ onToggleSidebar, showSidebar, onCreateNews }: HeaderProps) {
+export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems = [] }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     await signOut();
@@ -67,8 +71,20 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews }: HeaderPro
         {onCreateNews && (
           <CreateNewsDialog onCreate={onCreateNews} />
         )}
+        {newsItems.length > 0 && (
+          <ExportMenu items={newsItems} filename="intel-report" />
+        )}
         <Button 
-          variant="ghost" 
+          variant={location.pathname === '/timeline' ? 'secondary' : 'ghost'}
+          size="icon" 
+          className="h-8 w-8"
+          onClick={() => navigate('/timeline')}
+          title="Timeline View"
+        >
+          <Clock className="w-4 h-4" />
+        </Button>
+        <Button 
+          variant={location.pathname === '/analytics' ? 'secondary' : 'ghost'}
           size="icon" 
           className="h-8 w-8"
           onClick={() => navigate('/analytics')}
