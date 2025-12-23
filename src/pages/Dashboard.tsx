@@ -7,16 +7,51 @@ import { IntelMap } from '@/components/IntelMap';
 import { useNewsItems } from '@/hooks/useNewsItems';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
 
 export default function Dashboard() {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
   const { newsItems, loading, createNewsItem, deleteNewsItem } = useNewsItems();
-  const { isAnalyst } = useUserRole();
+  const { isAnalyst, isClient, loading: roleLoading } = useUserRole();
 
   // Use database items if available, otherwise fall back to mock data for demo
   const displayItems = newsItems.length > 0 ? newsItems : mockNewsData;
 
+  // Show loading state while role is being determined
+  if (roleLoading) {
+    return (
+      <div className="h-screen flex flex-col bg-background">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 border-primary/30"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-t-primary animate-spin"></div>
+            </div>
+            <span className="text-sm text-muted-foreground font-mono">LOADING DASHBOARD...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Executive/Client view - simplified summary dashboard
+  if (isClient) {
+    return (
+      <div className="h-screen flex flex-col bg-background grid-pattern scanline">
+        <Header
+          onToggleSidebar={() => setShowSidebar(!showSidebar)}
+          showSidebar={showSidebar}
+          newsItems={displayItems}
+        />
+        <div className="flex-1 overflow-hidden">
+          <ExecutiveDashboard newsItems={displayItems} loading={loading} />
+        </div>
+      </div>
+    );
+  }
+
+  // Analyst view - full detailed dashboard with map and news feed
   return (
     <div className="h-screen flex flex-col bg-background grid-pattern scanline">
       <Header
