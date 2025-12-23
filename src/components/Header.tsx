@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Radio, Menu, Settings, Bell, LogOut, User } from 'lucide-react';
+import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ interface HeaderProps {
 export function Header({ onToggleSidebar, showSidebar, onCreateNews }: HeaderProps) {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -65,6 +67,15 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews }: HeaderPro
         {onCreateNews && (
           <CreateNewsDialog onCreate={onCreateNews} />
         )}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8"
+          onClick={() => navigate('/analytics')}
+          title="Analytics Dashboard"
+        >
+          <BarChart3 className="w-4 h-4" />
+        </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 relative">
           <Bell className="w-4 h-4" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-intel-red rounded-full" />
