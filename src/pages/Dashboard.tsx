@@ -23,6 +23,7 @@ export default function Dashboard() {
         onToggleSidebar={() => setShowSidebar(!showSidebar)}
         showSidebar={showSidebar}
         onCreateNews={isAnalyst ? createNewsItem : undefined}
+        newsItems={displayItems}
       />
 
       <div className="flex-1 flex overflow-hidden">
