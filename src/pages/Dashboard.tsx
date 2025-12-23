@@ -4,17 +4,23 @@ import { mockNewsData } from '@/data/mockNews';
 import { Header } from '@/components/Header';
 import { NewsFeed } from '@/components/NewsFeed';
 import { IntelMap } from '@/components/IntelMap';
-import { NewsDetail } from '@/components/NewsDetail';
+import { useNewsItems } from '@/hooks/useNewsItems';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  const { newsItems, loading, createNewsItem, deleteNewsItem } = useNewsItems();
+
+  // Use database items if available, otherwise fall back to mock data for demo
+  const displayItems = newsItems.length > 0 ? newsItems : mockNewsData;
 
   return (
     <div className="h-screen flex flex-col bg-background grid-pattern scanline">
       <Header
         onToggleSidebar={() => setShowSidebar(!showSidebar)}
         showSidebar={showSidebar}
+        onCreateNews={createNewsItem}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -22,18 +28,31 @@ export default function Dashboard() {
         <aside className={`w-72 border-r border-border flex-shrink-0 transition-all duration-300 ${
           showSidebar ? 'translate-x-0' : '-translate-x-full absolute lg:relative lg:translate-x-0'
         }`}>
-          <NewsFeed
-            newsItems={mockNewsData}
-            onSelectItem={setSelectedItem}
-            selectedItem={selectedItem}
-          />
+          {loading ? (
+            <div className="p-4 space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <NewsFeed
+              newsItems={displayItems}
+              onSelectItem={setSelectedItem}
+              selectedItem={selectedItem}
+              onDeleteItem={deleteNewsItem}
+            />
+          )}
         </aside>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden relative">
           <div className="absolute inset-0">
             <IntelMap
-              newsItems={mockNewsData}
+              newsItems={displayItems}
               onSelectItem={setSelectedItem}
               selectedItem={selectedItem}
             />

@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      news_items: {
+        Row: {
+          actor_type: Database["public"]["Enums"]["actor_type"]
+          category: Database["public"]["Enums"]["news_category"]
+          confidence_level: Database["public"]["Enums"]["confidence_level"]
+          confidence_score: number
+          country: string
+          created_at: string
+          id: string
+          lat: number
+          lon: number
+          published_at: string
+          region: string
+          source: string
+          source_credibility: Database["public"]["Enums"]["source_credibility"]
+          sub_category: string | null
+          summary: string
+          tags: string[]
+          threat_level: Database["public"]["Enums"]["threat_level"]
+          title: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          actor_type?: Database["public"]["Enums"]["actor_type"]
+          category?: Database["public"]["Enums"]["news_category"]
+          confidence_level?: Database["public"]["Enums"]["confidence_level"]
+          confidence_score?: number
+          country: string
+          created_at?: string
+          id?: string
+          lat: number
+          lon: number
+          published_at?: string
+          region: string
+          source: string
+          source_credibility?: Database["public"]["Enums"]["source_credibility"]
+          sub_category?: string | null
+          summary: string
+          tags?: string[]
+          threat_level?: Database["public"]["Enums"]["threat_level"]
+          title: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          actor_type?: Database["public"]["Enums"]["actor_type"]
+          category?: Database["public"]["Enums"]["news_category"]
+          confidence_level?: Database["public"]["Enums"]["confidence_level"]
+          confidence_score?: number
+          country?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lon?: number
+          published_at?: string
+          region?: string
+          source?: string
+          source_credibility?: Database["public"]["Enums"]["source_credibility"]
+          sub_category?: string | null
+          summary?: string
+          tags?: string[]
+          threat_level?: Database["public"]["Enums"]["threat_level"]
+          title?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -49,7 +121,17 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      actor_type: "state" | "non-state" | "organization"
+      confidence_level: "verified" | "developing" | "breaking"
+      news_category:
+        | "security"
+        | "diplomacy"
+        | "economy"
+        | "conflict"
+        | "humanitarian"
+        | "technology"
+      source_credibility: "high" | "medium" | "low"
+      threat_level: "low" | "elevated" | "high" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -176,6 +258,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      actor_type: ["state", "non-state", "organization"],
+      confidence_level: ["verified", "developing", "breaking"],
+      news_category: [
+        "security",
+        "diplomacy",
+        "economy",
+        "conflict",
+        "humanitarian",
+        "technology",
+      ],
+      source_credibility: ["high", "medium", "low"],
+      threat_level: ["low", "elevated", "high", "critical"],
+    },
   },
 } as const
