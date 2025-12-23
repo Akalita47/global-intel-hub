@@ -5,12 +5,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import 'leaflet.heat';
-import 'leaflet-draw';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { NewsItem, ThreatLevel, AlertZone } from '@/types/news';
+import { NewsItem, ThreatLevel } from '@/types/news';
 import { formatDistanceToNow } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Flame, MapPin, Download, FileImage, AlertTriangle } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -97,9 +93,7 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
   const mapRef = useRef<L.Map | null>(null);
   const markersClusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const heatLayerRef = useRef<any>(null);
-  const drawnItemsRef = useRef<L.FeatureGroup | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [alertZones, setAlertZones] = useState<AlertZone[]>([]);
 
   // Initialize map
   useEffect(() => {
@@ -165,56 +159,6 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
     });
 
     mapRef.current.addLayer(markersClusterRef.current);
-
-    // Initialize draw controls for alert zones
-    drawnItemsRef.current = new L.FeatureGroup();
-    mapRef.current.addLayer(drawnItemsRef.current);
-
-    const drawControl = new L.Control.Draw({
-      position: 'topright',
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          shapeOptions: {
-            color: '#14b8a6',
-            fillOpacity: 0.2,
-          },
-        },
-        circle: {
-          shapeOptions: {
-            color: '#14b8a6',
-            fillOpacity: 0.2,
-          },
-        },
-        rectangle: false,
-        circlemarker: false,
-        marker: false,
-        polyline: false,
-      },
-      edit: {
-        featureGroup: drawnItemsRef.current,
-      },
-    });
-
-    mapRef.current.addControl(drawControl);
-
-    // Handle draw events
-    mapRef.current.on(L.Draw.Event.CREATED, (e: any) => {
-      const layer = e.layer;
-      drawnItemsRef.current?.addLayer(layer);
-      
-      const newZone: AlertZone = {
-        id: `zone-${Date.now()}`,
-        type: e.layerType === 'circle' ? 'circle' : 'polygon',
-        coordinates: e.layerType === 'circle' ? layer.getLatLng() : layer.getLatLngs()[0],
-        radius: e.layerType === 'circle' ? layer.getRadius() : undefined,
-        name: `Alert Zone ${alertZones.length + 1}`,
-        rules: [],
-        createdAt: new Date().toISOString(),
-      };
-      
-      setAlertZones(prev => [...prev, newZone]);
-    });
 
     return () => {
       if (mapRef.current) {
@@ -388,21 +332,7 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
 
   return (
     <div className="relative h-full w-full">
-      {/* Map container */}
       <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
-      
-
-      {/* Alert Zones Counter */}
-      {alertZones.length > 0 && (
-        <div className="absolute bottom-8 right-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-lg border border-border p-3 shadow-lg">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-intel-amber" />
-            <span className="text-xs font-medium text-foreground">
-              {alertZones.length} Alert Zone{alertZones.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
