@@ -1,15 +1,12 @@
-import { ViewMode } from '@/types/news';
 import { Button } from '@/components/ui/button';
-import { Map, List, Clock, Radio, Menu, Settings, Bell } from 'lucide-react';
+import { Radio, Menu, Settings, Bell } from 'lucide-react';
 
 interface HeaderProps {
-  viewMode: ViewMode;
-  onViewModeChange: (mode: ViewMode) => void;
   onToggleSidebar: () => void;
   showSidebar: boolean;
 }
 
-export function Header({ viewMode, onViewModeChange, onToggleSidebar, showSidebar }: HeaderProps) {
+export function Header({ onToggleSidebar, showSidebar }: HeaderProps) {
   return (
     <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4">
       {/* Left section */}
@@ -37,37 +34,6 @@ export function Header({ viewMode, onViewModeChange, onToggleSidebar, showSideba
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Center - View Mode Toggle */}
-      <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg">
-        <Button
-          variant={viewMode === 'map' ? 'default' : 'ghost'}
-          size="sm"
-          className="h-7 px-3 text-xs"
-          onClick={() => onViewModeChange('map')}
-        >
-          <Map className="w-3.5 h-3.5 mr-1.5" />
-          Map
-        </Button>
-        <Button
-          variant={viewMode === 'list' ? 'default' : 'ghost'}
-          size="sm"
-          className="h-7 px-3 text-xs"
-          onClick={() => onViewModeChange('list')}
-        >
-          <List className="w-3.5 h-3.5 mr-1.5" />
-          List
-        </Button>
-        <Button
-          variant={viewMode === 'timeline' ? 'default' : 'ghost'}
-          size="sm"
-          className="h-7 px-3 text-xs"
-          onClick={() => onViewModeChange('timeline')}
-        >
-          <Clock className="w-3.5 h-3.5 mr-1.5" />
-          Timeline
-        </Button>
       </div>
 
       {/* Right section */}
