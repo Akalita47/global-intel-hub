@@ -5,12 +5,14 @@ import { Header } from '@/components/Header';
 import { NewsFeed } from '@/components/NewsFeed';
 import { IntelMap } from '@/components/IntelMap';
 import { useNewsItems } from '@/hooks/useNewsItems';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
   const { newsItems, loading, createNewsItem, deleteNewsItem } = useNewsItems();
+  const { isAnalyst } = useUserRole();
 
   // Use database items if available, otherwise fall back to mock data for demo
   const displayItems = newsItems.length > 0 ? newsItems : mockNewsData;
@@ -20,7 +22,7 @@ export default function Dashboard() {
       <Header
         onToggleSidebar={() => setShowSidebar(!showSidebar)}
         showSidebar={showSidebar}
-        onCreateNews={createNewsItem}
+        onCreateNews={isAnalyst ? createNewsItem : undefined}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -43,7 +45,7 @@ export default function Dashboard() {
               newsItems={displayItems}
               onSelectItem={setSelectedItem}
               selectedItem={selectedItem}
-              onDeleteItem={deleteNewsItem}
+              onDeleteItem={isAnalyst ? deleteNewsItem : undefined}
             />
           )}
         </aside>
