@@ -91,6 +91,11 @@ export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }
                   {item.title}
                 </h3>
 
+                {/* Summary/Brief */}
+                <p className="text-[10px] text-muted-foreground line-clamp-2 mb-2">
+                  {item.summary}
+                </p>
+
                 {/* Location */}
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                   <MapPin className="w-3 h-3" />
