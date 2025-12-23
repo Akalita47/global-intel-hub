@@ -30,19 +30,6 @@ export function NewsFeed({ newsItems, onSelectItem, selectedItem }: NewsFeedProp
 
   return (
     <div className="intel-card h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Newspaper className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-sm">News Feed</h2>
-          </div>
-          <span className="text-xs font-mono text-muted-foreground">
-            {sortedNews.length} items
-          </span>
-        </div>
-      </div>
-
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
           {sortedNews.map((item) => (
