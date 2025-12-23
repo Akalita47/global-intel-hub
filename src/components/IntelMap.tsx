@@ -32,14 +32,32 @@ const threatColors: Record<ThreatLevel, string> = {
   critical: '#ef4444', // Red
 };
 
-// Category colors for reference
-const categoryColors: Record<string, string> = {
-  security: '#14b8a6',
-  diplomacy: '#3b82f6',
-  economy: '#22c55e',
-  conflict: '#ef4444',
-  humanitarian: '#f59e0b',
-  technology: '#8b5cf6',
+// Category colors and icons
+const categoryConfig: Record<string, { color: string; icon: string }> = {
+  security: { 
+    color: '#14b8a6', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>'
+  },
+  diplomacy: { 
+    color: '#3b82f6', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>'
+  },
+  economy: { 
+    color: '#22c55e', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+  },
+  conflict: { 
+    color: '#ef4444', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>'
+  },
+  humanitarian: { 
+    color: '#f59e0b', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>'
+  },
+  technology: { 
+    color: '#8b5cf6', 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="8" x="5" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 18h2"/><path d="M12 18h6"/></svg>'
+  },
 };
 
 // Get severity weight for heatmap
@@ -63,24 +81,30 @@ const getRecencyWeight = (publishedAt: string): number => {
   return 0.2;
 };
 
-// Create custom icon based on threat level
-const createThreatIcon = (threatLevel: ThreatLevel, isCritical: boolean = false) => {
-  const color = threatColors[threatLevel];
-  const size = threatLevel === 'critical' ? 24 : threatLevel === 'high' ? 20 : 16;
-  const pulseClass = isCritical ? 'critical-pulse' : '';
+// Create custom icon based on category
+const createCategoryIcon = (category: string, threatLevel: ThreatLevel) => {
+  const config = categoryConfig[category] || categoryConfig.security;
+  const size = threatLevel === 'critical' ? 32 : threatLevel === 'high' ? 28 : 24;
+  const isCritical = threatLevel === 'critical';
   
   return L.divIcon({
-    className: `custom-marker-container ${pulseClass}`,
+    className: 'custom-marker-container',
     html: `
-      <div class="threat-marker ${threatLevel}" style="
+      <div style="
         width: ${size}px;
         height: ${size}px;
-        background: ${color};
+        background: ${config.color};
         border-radius: 50%;
         border: 2px solid rgba(255,255,255,0.9);
-        box-shadow: 0 0 ${isCritical ? '20px' : '10px'} ${color}80, 0 2px 6px rgba(0,0,0,0.3);
+        box-shadow: 0 0 ${isCritical ? '20px' : '10px'} ${config.color}80, 0 2px 6px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
         ${isCritical ? 'animation: critical-pulse 1.5s infinite;' : ''}
-      "></div>
+      ">
+        ${config.icon}
+      </div>
     `,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -178,11 +202,11 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
     // Add new markers
     newsItems.forEach((item) => {
       const marker = L.marker([item.lat, item.lon], {
-        icon: createThreatIcon(item.threatLevel, item.threatLevel === 'critical'),
+        icon: createCategoryIcon(item.category, item.threatLevel),
         newsItem: item,
       } as any);
 
-      const threatColor = threatColors[item.threatLevel];
+      const categoryColor = categoryConfig[item.category]?.color || '#14b8a6';
       const confidenceColor = item.confidenceLevel === 'verified' ? '#22c55e' : 
                               item.confidenceLevel === 'developing' ? '#eab308' : '#ef4444';
 
@@ -196,9 +220,9 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
               font-weight: 600;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              background: ${threatColor}30;
-              color: ${threatColor};
-            ">${item.threatLevel}</span>
+              background: ${categoryColor}30;
+              color: ${categoryColor};
+            ">${item.category}</span>
             <span style="
               padding: 2px 8px;
               border-radius: 4px;
