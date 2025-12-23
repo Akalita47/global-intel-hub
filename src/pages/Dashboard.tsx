@@ -30,24 +30,14 @@ export default function Dashboard() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex overflow-hidden relative">
-          {/* Map View */}
-          <div className="flex-1 relative">
-            <div className="absolute inset-0">
-              <IntelMap
-                newsItems={mockNewsData}
-                onSelectItem={setSelectedItem}
-                selectedItem={selectedItem}
-              />
-            </div>
+        <main className="flex-1 overflow-hidden relative">
+          <div className="absolute inset-0">
+            <IntelMap
+              newsItems={mockNewsData}
+              onSelectItem={setSelectedItem}
+              selectedItem={selectedItem}
+            />
           </div>
-
-          {/* Right Panel - Detail View */}
-          {selectedItem && (
-            <aside className="w-80 border-l border-border flex-shrink-0">
-              <NewsDetail item={selectedItem} onClose={() => setSelectedItem(null)} />
-            </aside>
-          )}
         </main>
       </div>
     </div>
