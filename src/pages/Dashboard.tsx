@@ -138,23 +138,6 @@ export default function Dashboard() {
           )}
         </main>
       </div>
-
-      {/* Status Bar */}
-      <footer className="h-8 border-t border-border bg-card/50 flex items-center justify-between px-4 text-[10px] font-mono text-muted-foreground">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-intel-emerald animate-pulse" />
-            SYSTEM ONLINE
-          </span>
-          <span>|</span>
-          <span>LAST UPDATE: {new Date().toISOString()}</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span>SOURCES: 12 ACTIVE</span>
-          <span>|</span>
-          <span>LATENCY: 42ms</span>
-        </div>
-      </footer>
     </div>
   );
 }
