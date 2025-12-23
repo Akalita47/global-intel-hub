@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { FilterState, ThreatLevel, ConfidenceLevel, ActorType } from '@/types/news';
-import { regions, categories, sources, threatLevelsList, confidenceLevelsList, actorTypesList } from '@/data/mockNews';
+import { FilterState, ConfidenceLevel, ActorType } from '@/types/news';
+import { regions, categories, sources, confidenceLevelsList, actorTypesList } from '@/data/mockNews';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,6 @@ import {
   Tag,
   Radio,
   RotateCcw,
-  Shield,
   Users,
   Clock
 } from 'lucide-react';
@@ -35,12 +34,6 @@ const categoryColors: Record<string, string> = {
   technology: 'bg-intel-purple/20 text-purple-400 border-intel-purple/30',
 };
 
-const threatColors: Record<ThreatLevel, string> = {
-  low: 'bg-green-500/20 text-green-400 border-green-500/30',
-  elevated: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  critical: 'bg-red-500/20 text-red-400 border-red-500/30',
-};
 
 export function FilterPanel({ filters, onFiltersChange, totalResults, filteredResults }: FilterPanelProps) {
   const toggleCategory = (category: string) => {
@@ -64,12 +57,6 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
     onFiltersChange({ ...filters, sources: newSources });
   };
 
-  const toggleThreatLevel = (level: ThreatLevel) => {
-    const newLevels = filters.threatLevels.includes(level)
-      ? filters.threatLevels.filter((l) => l !== level)
-      : [...filters.threatLevels, level];
-    onFiltersChange({ ...filters, threatLevels: newLevels });
-  };
 
   const toggleConfidenceLevel = (level: ConfidenceLevel) => {
     const newLevels = filters.confidenceLevels.includes(level)
@@ -217,29 +204,6 @@ export function FilterPanel({ filters, onFiltersChange, totalResults, filteredRe
             </div>
           </div>
 
-          {/* Threat Levels */}
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground flex items-center gap-2">
-              <Shield className="w-3 h-3" />
-              Threat Level
-            </Label>
-            <div className="flex flex-wrap gap-1.5">
-              {threatLevelsList.map((level) => (
-                <Badge
-                  key={level}
-                  variant="outline"
-                  className={`cursor-pointer text-xs capitalize transition-all ${
-                    filters.threatLevels.includes(level)
-                      ? threatColors[level]
-                      : 'bg-secondary/30 text-muted-foreground border-border hover:bg-secondary/50'
-                  }`}
-                  onClick={() => toggleThreatLevel(level)}
-                >
-                  {level}
-                </Badge>
-              ))}
-            </div>
-          </div>
 
           {/* Time Range */}
           <div className="space-y-2">
