@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NewsItem } from '@/types/news';
+import { NewsItem, FilterState } from '@/types/news';
 import { mockNewsData } from '@/data/mockNews';
 import { Header } from '@/components/Header';
 import { NewsFeed } from '@/components/NewsFeed';
@@ -8,11 +8,27 @@ import { useNewsItems } from '@/hooks/useNewsItems';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
+import { WatchlistManager } from '@/components/WatchlistManager';
+import { AlertRulesManager } from '@/components/AlertRulesManager';
 
 export default function Dashboard() {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [filters, setFilters] = useState<FilterState>({
+    dateRange: { from: null, to: null },
+    regions: [],
+    countries: [],
+    tags: [],
+    sources: [],
+    searchQuery: '',
+    categories: [],
+    threatLevels: [],
+    confidenceLevels: [],
+    actorTypes: [],
+    timeRange: '24h',
+  });
   const { newsItems, loading, createNewsItem, deleteNewsItem } = useNewsItems();
+  const { isAnalyst, isClient, loading: roleLoading } = useUserRole();
   const { isAnalyst, isClient, loading: roleLoading } = useUserRole();
 
   // Use database items if available, otherwise fall back to mock data for demo
@@ -96,6 +112,12 @@ export default function Dashboard() {
             />
           </div>
         </main>
+
+        {/* Right Sidebar - Watchlists & Alerts */}
+        <aside className="w-64 border-l border-border flex-shrink-0 hidden xl:flex flex-col gap-4 p-4 overflow-auto">
+          <WatchlistManager currentFilters={filters} onApplyFilters={setFilters} />
+          <AlertRulesManager />
+        </aside>
       </div>
     </div>
   );
