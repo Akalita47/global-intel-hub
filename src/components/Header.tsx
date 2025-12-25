@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Radio, Menu, Settings, Bell, LogOut, User, BarChart3, Clock, Home } from 'lucide-react';
+import { Radio, Menu, LogOut, User, BarChart3, Clock, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -17,6 +17,8 @@ import { ExportMenu } from '@/components/ExportMenu';
 import { NewsItem } from '@/types/news';
 import { RoleBadge } from '@/components/RoleBadge';
 import { useUserRole } from '@/hooks/useUserRole';
+import { NotificationsPanel } from '@/components/NotificationsPanel';
+import { UserSettings } from '@/components/UserSettings';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -106,13 +108,8 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
         >
           <BarChart3 className="w-4 h-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative">
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-intel-red rounded-full" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Settings className="w-4 h-4" />
-        </Button>
+        <NotificationsPanel />
+        <UserSettings />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
