@@ -29,7 +29,6 @@ export default function Dashboard() {
   });
   const { newsItems, loading, createNewsItem, deleteNewsItem } = useNewsItems();
   const { isAnalyst, isClient, loading: roleLoading } = useUserRole();
-  const { isAnalyst, isClient, loading: roleLoading } = useUserRole();
 
   // Use database items if available, otherwise fall back to mock data for demo
   const displayItems = newsItems.length > 0 ? newsItems : mockNewsData;
