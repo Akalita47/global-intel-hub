@@ -112,7 +112,7 @@ const createCategoryIcon = (category: string, threatLevel: ThreatLevel) => {
   });
 };
 
-import { MapControls } from './MapControls';
+
 
 export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -359,12 +359,6 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
   return (
     <div className="relative h-full w-full">
       <div ref={mapContainerRef} className="h-full w-full" style={{ background: '#f5f5f5' }} />
-      <MapControls
-        showHeatmap={showHeatmap}
-        onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
-        onExportImage={handleExportImage}
-        onExportPDF={handleExportPDF}
-      />
     </div>
   );
 }
