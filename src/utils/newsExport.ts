@@ -93,25 +93,31 @@ const generateRecommendations = (item: NewsItem) => {
   return { immediate, shortTerm, strategic };
 };
 
-// Fetch static map image from OpenStreetMap
+// Fetch static map image via edge function (avoids CORS)
 const fetchStaticMapImage = async (lat: number, lon: number, zoom: number): Promise<string | null> => {
   try {
-    // Use OpenStreetMap static map service
-    const width = 600;
-    const height = 300;
-    const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=${zoom}&size=${width}x${height}&maptype=mapnik&markers=${lat},${lon},red-pushpin`;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
     
-    const response = await fetch(mapUrl);
-    if (!response.ok) return null;
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/fetch-static-map?lat=${lat}&lon=${lon}&zoom=${zoom}&width=600&height=300`,
+      {
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
     
-    const blob = await response.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
+    if (!response.ok) {
+      console.error('Map fetch failed:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.image || null;
+  } catch (error) {
+    console.error('Error fetching map:', error);
     return null;
   }
 };
