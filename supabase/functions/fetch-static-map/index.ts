@@ -5,6 +5,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Convert lat/lon to tile coordinates
+function latLonToTile(lat: number, lon: number, zoom: number) {
+  const x = Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
+  const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom));
+  return { x, y };
+}
+
+// Calculate bounding box for ESRI export
+function getBoundingBox(lat: number, lon: number, zoom: number, width: number, height: number) {
+  // Approximate meters per pixel at equator for each zoom level
+  const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+  
+  const halfWidthMeters = (width / 2) * metersPerPixel;
+  const halfHeightMeters = (height / 2) * metersPerPixel;
+  
+  // Convert to degrees (approximate)
+  const latOffset = halfHeightMeters / 111320;
+  const lonOffset = halfWidthMeters / (111320 * Math.cos(lat * Math.PI / 180));
+  
+  return {
+    xmin: lon - lonOffset,
+    ymin: lat - latOffset,
+    xmax: lon + lonOffset,
+    ymax: lat + latOffset,
+  };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -13,11 +40,12 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const lat = url.searchParams.get('lat');
-    const lon = url.searchParams.get('lon');
-    const zoom = url.searchParams.get('zoom') || '8';
-    const width = url.searchParams.get('width') || '600';
-    const height = url.searchParams.get('height') || '300';
+    const lat = parseFloat(url.searchParams.get('lat') || '0');
+    const lon = parseFloat(url.searchParams.get('lon') || '0');
+    const zoom = parseInt(url.searchParams.get('zoom') || '8');
+    const width = parseInt(url.searchParams.get('width') || '600');
+    const height = parseInt(url.searchParams.get('height') || '300');
+    const mapType = url.searchParams.get('maptype') || 'standard'; // 'standard' or 'satellite'
 
     if (!lat || !lon) {
       return new Response(
@@ -26,10 +54,22 @@ serve(async (req) => {
       );
     }
 
-    // Fetch from OpenStreetMap static map service
-    const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=${zoom}&size=${width}x${height}&maptype=mapnik&markers=${lat},${lon},red-pushpin`;
-    
-    console.log('Fetching map from:', mapUrl);
+    let mapUrl: string;
+
+    if (mapType === 'satellite') {
+      // Use ESRI World Imagery for satellite view
+      const bbox = getBoundingBox(lat, lon, zoom, width, height);
+      mapUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?` +
+        `bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}` +
+        `&bboxSR=4326&imageSR=4326&size=${width},${height}&format=png&f=image`;
+      
+      console.log('Fetching satellite map from ESRI:', mapUrl);
+    } else {
+      // Use OpenStreetMap for standard view
+      mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=${zoom}&size=${width}x${height}&maptype=mapnik&markers=${lat},${lon},red-pushpin`;
+      
+      console.log('Fetching standard map from OSM:', mapUrl);
+    }
     
     const response = await fetch(mapUrl);
     
@@ -49,6 +89,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         image: `data:image/png;base64,${base64Image}`,
+        mapType,
         success: true 
       }),
       { 
