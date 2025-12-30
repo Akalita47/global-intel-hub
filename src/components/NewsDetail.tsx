@@ -13,9 +13,11 @@ import {
   Bookmark,
   AlertCircle,
   Hash,
-  Copy
+  Copy,
+  Download
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { exportNewsItemToPDF } from '@/utils/newsExport';
 
 interface NewsDetailProps {
   item: NewsItem;
@@ -56,6 +58,26 @@ export function NewsDetail({ item, onClose }: NewsDetailProps) {
     }
   };
 
+  const handleExport = async () => {
+    toast({
+      title: 'Generating Report',
+      description: 'Creating intelligence report PDF...',
+    });
+    
+    try {
+      await exportNewsItemToPDF(item);
+      toast({
+        title: 'Report Generated',
+        description: 'Intelligence report downloaded successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Export Failed',
+        description: 'Could not generate the report',
+        variant: 'destructive',
+      });
+    }
+  };
   return (
     <div className="intel-card h-full flex flex-col animate-slide-in-right">
       {/* Header */}
@@ -169,6 +191,10 @@ export function NewsDetail({ item, onClose }: NewsDetailProps) {
             <ExternalLink className="w-4 h-4 mr-2" />
             View Source
           </a>
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleExport}>
+          <Download className="w-4 h-4 mr-2" />
+          Export
         </Button>
         <Button variant="outline" size="icon" className="h-8 w-8">
           <Share2 className="w-4 h-4" />
