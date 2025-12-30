@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Radio, Menu, LogOut, User, BarChart3, Clock, Home } from 'lucide-react';
+import { Radio, Menu, LogOut, User, Clock, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -98,15 +98,6 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
           title="Timeline View"
         >
           <Clock className="w-4 h-4" />
-        </Button>
-        <Button 
-          variant={location.pathname === '/analytics' ? 'secondary' : 'ghost'}
-          size="icon" 
-          className="h-8 w-8"
-          onClick={() => navigate('/analytics')}
-          title="Analytics Dashboard"
-        >
-          <BarChart3 className="w-4 h-4" />
         </Button>
         <NotificationsPanel />
         <UserSettings />
