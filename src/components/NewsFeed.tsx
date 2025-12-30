@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { NewsItem } from '@/types/news';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MapPin, Clock, Trash2, Search, Hash } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface NewsFeedProps {
@@ -25,13 +26,27 @@ const categoryColors: Record<string, string> = {
 
 export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }: NewsFeedProps) {
   const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
   
-  // Sort news items chronologically (newest first)
-  const sortedNews = useMemo(() => {
-    return [...newsItems].sort((a, b) => 
+  // Filter and sort news items
+  const filteredAndSortedNews = useMemo(() => {
+    let items = [...newsItems];
+    
+    // Filter by search query (token, title, or summary)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      items = items.filter(item => 
+        item.token?.toLowerCase().includes(query) ||
+        item.title.toLowerCase().includes(query) ||
+        item.summary.toLowerCase().includes(query)
+      );
+    }
+    
+    // Sort chronologically (newest first)
+    return items.sort((a, b) => 
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     );
-  }, [newsItems]);
+  }, [newsItems, searchQuery]);
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -42,15 +57,31 @@ export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }
 
   return (
     <div className="intel-card h-full flex flex-col">
+      {/* Search Bar */}
+      <div className="p-2 border-b border-border">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search by token (INT-2024-...) or keyword"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 h-8 text-xs bg-secondary/50"
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1.5 px-0.5">
+          {filteredAndSortedNews.length} of {newsItems.length} intel reports
+        </p>
+      </div>
+      
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {sortedNews.length === 0 ? (
+          {filteredAndSortedNews.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground text-sm">
               <p>No intel reports yet.</p>
               <p className="text-xs mt-1">Click "Add Intel" to create one.</p>
             </div>
           ) : (
-            sortedNews.map((item) => (
+            filteredAndSortedNews.map((item) => (
               <article
                 key={item.id}
                 onClick={() => onSelectItem(item)}
@@ -72,6 +103,16 @@ export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }
                   </Button>
                 )}
                 
+                {/* Token Badge */}
+                {item.token && (
+                  <div className="flex items-center gap-1 mb-1.5 pr-6">
+                    <Hash className="w-3 h-3 text-primary" />
+                    <span className="text-[10px] font-mono font-medium text-primary">
+                      {item.token}
+                    </span>
+                  </div>
+                )}
+
                 {/* Time and Category */}
                 <div className="flex items-center justify-between gap-2 mb-2 pr-6">
                   <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
