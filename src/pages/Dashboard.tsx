@@ -4,6 +4,7 @@ import { mockNewsData } from '@/data/mockNews';
 import { Header } from '@/components/Header';
 import { NewsFeed } from '@/components/NewsFeed';
 import { IntelMap } from '@/components/IntelMap';
+import { NewsDetail } from '@/components/NewsDetail';
 import { useNewsItems } from '@/hooks/useNewsItems';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -109,6 +110,13 @@ export default function Dashboard() {
             />
           </div>
         </main>
+
+        {/* Right Sidebar - News Detail */}
+        {selectedItem && (
+          <aside className="w-80 border-l border-border flex-shrink-0 bg-background">
+            <NewsDetail item={selectedItem} onClose={() => setSelectedItem(null)} />
+          </aside>
+        )}
       </div>
     </div>
   );
