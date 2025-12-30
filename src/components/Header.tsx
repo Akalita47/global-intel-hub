@@ -78,9 +78,6 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
         {onCreateNews && (
           <CreateNewsDialog onCreate={onCreateNews} />
         )}
-        {newsItems.length > 0 && (
-          <ExportMenu items={newsItems} filename="intel-report" />
-        )}
         <Button 
           variant={location.pathname === '/' ? 'secondary' : 'ghost'}
           size="icon" 
