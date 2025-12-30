@@ -54,22 +54,19 @@ serve(async (req) => {
       );
     }
 
-    let mapUrl: string;
-
-    if (mapType === 'satellite') {
-      // Use ESRI World Imagery for satellite view
-      const bbox = getBoundingBox(lat, lon, zoom, width, height);
-      mapUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?` +
-        `bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}` +
-        `&bboxSR=4326&imageSR=4326&size=${width},${height}&format=png&f=image`;
-      
-      console.log('Fetching satellite map from ESRI:', mapUrl);
-    } else {
-      // Use OpenStreetMap for standard view
-      mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=${zoom}&size=${width}x${height}&maptype=mapnik&markers=${lat},${lon},red-pushpin`;
-      
-      console.log('Fetching standard map from OSM:', mapUrl);
-    }
+    // Calculate bounding box for ESRI export
+    const bbox = getBoundingBox(lat, lon, zoom, width, height);
+    
+    // Use ESRI services for both map types (more reliable than OSM static)
+    const esriService = mapType === 'satellite' 
+      ? 'World_Imagery'
+      : 'World_Street_Map';
+    
+    const mapUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/${esriService}/MapServer/export?` +
+      `bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}` +
+      `&bboxSR=4326&imageSR=4326&size=${width},${height}&format=png&f=image`;
+    
+    console.log(`Fetching ${mapType} map from ESRI:`, mapUrl);
     
     const response = await fetch(mapUrl);
     
