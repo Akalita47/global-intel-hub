@@ -93,6 +93,43 @@ const generateRecommendations = (item: NewsItem) => {
   return { immediate, shortTerm, strategic };
 };
 
+// Fetch static map image from OpenStreetMap
+const fetchStaticMapImage = async (lat: number, lon: number, zoom: number): Promise<string | null> => {
+  try {
+    // Use OpenStreetMap static map service
+    const width = 600;
+    const height = 300;
+    const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lon}&zoom=${zoom}&size=${width}x${height}&maptype=mapnik&markers=${lat},${lon},red-pushpin`;
+    
+    const response = await fetch(mapUrl);
+    if (!response.ok) return null;
+    
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
+// Calculate appropriate zoom level based on incident category
+const calculateMapZoom = (category: string, threatLevel: string): number => {
+  // City-level incidents (security, conflict) -> higher zoom
+  if (category === 'security' || category === 'conflict') {
+    return threatLevel === 'critical' ? 10 : 8;
+  }
+  // Regional infrastructure events
+  if (category === 'economy' || category === 'technology') {
+    return 6;
+  }
+  // Country-level threats (diplomacy, humanitarian)
+  return 5;
+};
+
 export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -100,6 +137,10 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   const margin = 15;
   const contentWidth = pageWidth - (margin * 2);
   let yPos = margin;
+
+  // Fetch map image while preparing report
+  const mapZoom = calculateMapZoom(item.category, item.threatLevel);
+  const mapImagePromise = fetchStaticMapImage(item.lat, item.lon, mapZoom);
 
   const reportId = generateReportId();
   const classification = getClassification(item.threatLevel);
@@ -282,44 +323,93 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   addLabeledContent('Country', item.country);
   addLabeledContent('Region', item.region);
   addLabeledContent('Coordinates', `LAT ${item.lat.toFixed(4)} | LON ${item.lon.toFixed(4)}`);
-  yPos += 2;
+  
+  // Strategic relevance
+  const strategicRelevance = item.category === 'security' || item.category === 'conflict' 
+    ? 'High-priority security zone with active threat indicators'
+    : item.category === 'economy' || item.category === 'technology'
+    ? 'Critical infrastructure and economic significance'
+    : 'Geopolitical or humanitarian significance';
+  addLabeledContent('Strategic Note', strategicRelevance);
+  yPos += 4;
 
-  // Map visualization
-  checkPageBreak(45);
-  const mapHeight = 40;
-  pdf.setFillColor(226, 232, 240);
-  pdf.roundedRect(margin, yPos, contentWidth, mapHeight, 3, 3, 'F');
+  // Map visualization - Real Geographic Map
+  checkPageBreak(60);
+  const mapHeight = 50;
+  const mapImage = await mapImagePromise;
   
-  // Grid
-  pdf.setDrawColor(203, 213, 225);
-  pdf.setLineWidth(0.2);
-  for (let i = 1; i < 10; i++) {
-    pdf.line(margin + (contentWidth / 10) * i, yPos, margin + (contentWidth / 10) * i, yPos + mapHeight);
+  if (mapImage) {
+    // Add real map image
+    try {
+      pdf.addImage(mapImage, 'PNG', margin, yPos, contentWidth, mapHeight);
+      
+      // Add border
+      pdf.setDrawColor(30, 41, 59);
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(margin, yPos, contentWidth, mapHeight, 2, 2, 'S');
+    } catch {
+      // Fallback if image fails
+      pdf.setFillColor(226, 232, 240);
+      pdf.roundedRect(margin, yPos, contentWidth, mapHeight, 2, 2, 'F');
+      pdf.setTextColor(100, 116, 139);
+      pdf.setFontSize(10);
+      pdf.text('Map temporarily unavailable', margin + contentWidth / 2, yPos + mapHeight / 2, { align: 'center' });
+    }
+  } else {
+    // Fallback styled map placeholder
+    pdf.setFillColor(226, 232, 240);
+    pdf.roundedRect(margin, yPos, contentWidth, mapHeight, 2, 2, 'F');
+    
+    // Draw grid lines to simulate map
+    pdf.setDrawColor(203, 213, 225);
+    pdf.setLineWidth(0.15);
+    for (let i = 1; i < 12; i++) {
+      pdf.line(margin + (contentWidth / 12) * i, yPos, margin + (contentWidth / 12) * i, yPos + mapHeight);
+    }
+    for (let i = 1; i < 6; i++) {
+      pdf.line(margin, yPos + (mapHeight / 6) * i, margin + contentWidth, yPos + (mapHeight / 6) * i);
+    }
+    
+    // Center pin
+    const pinX = margin + contentWidth / 2;
+    const pinY = yPos + mapHeight / 2;
+    pdf.setFillColor(100, 116, 139);
+    pdf.ellipse(pinX, pinY + 8, 6, 2, 'F');
+    pdf.setFillColor(...threatColor);
+    pdf.circle(pinX, pinY - 2, 7, 'F');
+    pdf.triangle(pinX - 5, pinY + 2, pinX + 5, pinY + 2, pinX, pinY + 8, 'F');
+    pdf.setFillColor(255, 255, 255);
+    pdf.circle(pinX, pinY - 2, 3.5, 'F');
+    pdf.setFillColor(...threatColor);
+    pdf.circle(pinX, pinY - 2, 1.8, 'F');
   }
-  for (let i = 1; i < 5; i++) {
-    pdf.line(margin, yPos + (mapHeight / 5) * i, margin + contentWidth, yPos + (mapHeight / 5) * i);
-  }
   
-  // Pin
-  const pinX = margin + contentWidth / 2;
-  const pinY = yPos + mapHeight / 2;
-  pdf.setFillColor(100, 116, 139);
-  pdf.ellipse(pinX, pinY + 6, 5, 1.5, 'F');
-  pdf.setFillColor(...threatColor);
-  pdf.circle(pinX, pinY - 3, 6, 'F');
-  pdf.triangle(pinX - 4, pinY, pinX + 4, pinY, pinX, pinY + 6, 'F');
-  pdf.setFillColor(255, 255, 255);
-  pdf.circle(pinX, pinY - 3, 3, 'F');
-  pdf.setFillColor(...threatColor);
-  pdf.circle(pinX, pinY - 3, 1.5, 'F');
-  
-  // Location label
-  pdf.setFillColor(15, 23, 42);
-  pdf.roundedRect(pinX - 25, yPos + mapHeight - 10, 50, 8, 2, 2, 'F');
+  // Map overlay: Location label with coordinates
+  pdf.setFillColor(15, 23, 42, 0.9);
+  pdf.roundedRect(margin + 2, yPos + mapHeight - 14, 85, 12, 2, 2, 'F');
   pdf.setTextColor(255, 255, 255);
-  pdf.setFontSize(7);
+  pdf.setFontSize(8);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(`${item.country}`, pinX, yPos + mapHeight - 4.5, { align: 'center' });
+  pdf.text(`${item.country} | ${item.region}`, margin + 5, yPos + mapHeight - 8);
+  pdf.setFontSize(6);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`${item.lat.toFixed(4)}°, ${item.lon.toFixed(4)}°`, margin + 5, yPos + mapHeight - 4);
+  
+  // Zoom level indicator
+  pdf.setFillColor(59, 130, 246);
+  pdf.roundedRect(margin + contentWidth - 25, yPos + 2, 23, 7, 2, 2, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(6);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`ZOOM: ${mapZoom}`, margin + contentWidth - 23, yPos + 6.5);
+  
+  // Map scale indicator
+  pdf.setFillColor(255, 255, 255, 0.9);
+  pdf.roundedRect(margin + contentWidth - 40, yPos + mapHeight - 10, 38, 8, 2, 2, 'F');
+  pdf.setTextColor(30, 41, 59);
+  pdf.setFontSize(6);
+  const scaleText = mapZoom >= 10 ? '~5 km' : mapZoom >= 8 ? '~20 km' : mapZoom >= 6 ? '~100 km' : '~500 km';
+  pdf.text(`Scale: ${scaleText}`, margin + contentWidth - 38, yPos + mapHeight - 5);
   
   yPos += mapHeight + 8;
 
