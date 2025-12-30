@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, parseISO, differenceInHours, differenceInMinutes } from 'date-fns';
 import { 
   X, Clock, MapPin, Shield, Eye, AlertTriangle, TrendingUp, TrendingDown, Minus,
-  FileText, History, Target, Zap, Radio, ExternalLink, Copy, CheckCircle
+  FileText, History, Target, Zap, Radio, ExternalLink, Copy, CheckCircle, Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { exportSingleIntelToPDF } from '@/utils/singleIntelExport';
 
 interface TimelineDetailPanelProps {
   event: IntelligenceEvent;
@@ -390,6 +391,25 @@ export function TimelineDetailPanel({ event, onClose, onLocateOnMap, isPremium =
               Locate on Map
             </Button>
           )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 text-xs"
+            onClick={async () => {
+              toast.loading('Generating PDF report...');
+              try {
+                await exportSingleIntelToPDF(event);
+                toast.dismiss();
+                toast.success('Intel report exported successfully');
+              } catch (error) {
+                toast.dismiss();
+                toast.error('Failed to export report');
+              }
+            }}
+          >
+            <Download className="w-3 h-3 mr-1" />
+            Export
+          </Button>
           <Button 
             variant="outline" 
             size="sm" 
