@@ -8,8 +8,6 @@ import { useNewsItems } from '@/hooks/useNewsItems';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
-import { WatchlistManager } from '@/components/WatchlistManager';
-import { AlertRulesManager } from '@/components/AlertRulesManager';
 
 export default function Dashboard() {
   const [selectedItem, setSelectedItem] = useState<NewsItem | null>(null);
@@ -111,12 +109,6 @@ export default function Dashboard() {
             />
           </div>
         </main>
-
-        {/* Right Sidebar - Watchlists & Alerts */}
-        <aside className="w-64 border-l border-border flex-shrink-0 hidden xl:flex flex-col gap-4 p-4 overflow-auto">
-          <WatchlistManager currentFilters={filters} onApplyFilters={setFilters} />
-          <AlertRulesManager />
-        </aside>
       </div>
     </div>
   );
