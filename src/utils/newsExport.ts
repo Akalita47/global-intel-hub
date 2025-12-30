@@ -113,14 +113,17 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
     if (yPos + requiredSpace > pageHeight - 20) {
       pdf.addPage();
       yPos = margin;
-      // Add classification header on new page
+      // Add header on new page
       pdf.setFillColor(15, 23, 42);
-      pdf.rect(0, 0, pageWidth, 8, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(7);
+      pdf.rect(0, 0, pageWidth, 12, 'F');
+      pdf.setTextColor(96, 165, 250);
+      pdf.setFontSize(9);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(classification, pageWidth / 2, 5.5, { align: 'center' });
-      yPos = 15;
+      pdf.text('GLOBAL INTEL DESK', margin, 7);
+      pdf.setTextColor(239, 68, 68);
+      pdf.setFontSize(7);
+      pdf.text(classification, pageWidth - margin, 7, { align: 'right' });
+      yPos = 18;
     }
   };
 
@@ -164,13 +167,28 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
 
   // Classification Banner
   pdf.setFillColor(15, 23, 42);
-  pdf.rect(0, 0, pageWidth, 12, 'F');
-  pdf.setTextColor(239, 68, 68);
-  pdf.setFontSize(10);
+  pdf.rect(0, 0, pageWidth, 16, 'F');
+  
+  // Global Intel Desk branding
+  pdf.setTextColor(96, 165, 250);
+  pdf.setFontSize(12);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(classification, pageWidth / 2, 8, { align: 'center' });
+  pdf.text('GLOBAL INTEL DESK', margin, 8);
+  
+  pdf.setTextColor(148, 163, 184);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Intelligence & Security Operations', margin, 13);
+  
+  // Classification badge
+  pdf.setFillColor(239, 68, 68);
+  pdf.roundedRect(pageWidth - margin - 35, 4, 35, 8, 2, 2, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(classification, pageWidth - margin - 32, 9.5);
 
-  yPos = 18;
+  yPos = 22;
 
   // Report Identity Box
   pdf.setFillColor(241, 245, 249);
@@ -496,19 +514,29 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
     
-    // Bottom classification banner
+    // Bottom footer
     pdf.setFillColor(15, 23, 42);
-    pdf.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+    pdf.rect(0, pageHeight - 14, pageWidth, 14, 'F');
+    
+    // Global Intel Desk branding
+    pdf.setTextColor(96, 165, 250);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('GLOBAL INTEL DESK', margin, pageHeight - 7);
+    
     pdf.setTextColor(148, 163, 184);
-    pdf.setFontSize(7);
+    pdf.setFontSize(6);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Report ID: ${reportId}`, margin, pageHeight - 5);
+    pdf.text(`Report ID: ${reportId}`, margin, pageHeight - 3);
+    
     pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
-    pdf.text(`Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')} UTC`, pageWidth - margin, pageHeight - 5, { align: 'right' });
+    
+    pdf.setTextColor(148, 163, 184);
+    pdf.text(`Generated: ${format(new Date(), 'yyyy-MM-dd HH:mm')} UTC`, pageWidth - margin, pageHeight - 7, { align: 'right' });
     
     pdf.setTextColor(239, 68, 68);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(classification, pageWidth / 2, pageHeight - 9, { align: 'center' });
+    pdf.text(classification, pageWidth - margin, pageHeight - 3, { align: 'right' });
   }
 
   // Save
