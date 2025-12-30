@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { NewsItem } from '@/types/news';
 import { formatDistanceToNow, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -12,11 +11,8 @@ import {
   X,
   Share2,
   Bookmark,
-  AlertCircle,
-  Brain
+  AlertCircle
 } from 'lucide-react';
-import { AIAnalysisPanel } from './AIAnalysisPanel';
-import { CommentsSection } from './CommentsSection';
 
 interface NewsDetailProps {
   item: NewsItem;
@@ -45,8 +41,6 @@ const getConfidenceLabel = (score: number) => {
 };
 
 export function NewsDetail({ item, onClose }: NewsDetailProps) {
-  const [showAI, setShowAI] = useState(false);
-
   return (
     <div className="intel-card h-full flex flex-col animate-slide-in-right">
       {/* Header */}
@@ -138,27 +132,10 @@ export function NewsDetail({ item, onClose }: NewsDetailProps) {
           <span>Published: </span>
           <span>{formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}</span>
         </div>
-
-        {/* AI Analysis Panel */}
-        {showAI && (
-          <AIAnalysisPanel newsItem={item} onClose={() => setShowAI(false)} />
-        )}
-
-        {/* Comments Section */}
-        <CommentsSection newsItemId={item.id} />
       </div>
 
       {/* Footer Actions */}
       <div className="p-4 border-t border-border flex items-center gap-2">
-        <Button
-          variant={showAI ? 'default' : 'outline'}
-          size="sm"
-          className="gap-2"
-          onClick={() => setShowAI(!showAI)}
-        >
-          <Brain className="w-4 h-4" />
-          AI Analysis
-        </Button>
         <Button asChild size="sm" className="flex-1">
           <a href={item.url} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="w-4 h-4 mr-2" />
