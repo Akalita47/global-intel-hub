@@ -125,40 +125,60 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   pdf.text('LOCATION MAP', margin, yPos);
   yPos += 5;
 
-  try {
-    // Create static map image using OpenStreetMap
-    const mapZoom = 8;
-    const mapWidth = 400;
-    const mapHeight = 200;
-    const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${item.lat},${item.lon}&zoom=${mapZoom}&size=${mapWidth}x${mapHeight}&markers=${item.lat},${item.lon},red-pushpin`;
-    
-    const mapResponse = await fetch(mapUrl);
-    const mapBlob = await mapResponse.blob();
-    const mapBase64 = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(mapBlob);
-    });
-
-    pdf.addImage(mapBase64, 'PNG', margin, yPos, contentWidth, 50);
-    
-    // Add pin indicator overlay
-    pdf.setFillColor(239, 68, 68);
-    pdf.circle(margin + contentWidth/2, yPos + 25, 3, 'F');
-    pdf.setDrawColor(255, 255, 255);
-    pdf.setLineWidth(1);
-    pdf.circle(margin + contentWidth/2, yPos + 25, 3, 'S');
-    
-    yPos += 58;
-  } catch (error) {
-    // Fallback if map fails
-    pdf.setFillColor(241, 245, 249);
-    pdf.roundedRect(margin, yPos, contentWidth, 50, 3, 3, 'F');
-    pdf.setTextColor(148, 163, 184);
-    pdf.setFontSize(10);
-    pdf.text('Map unavailable', margin + contentWidth/2 - 15, yPos + 25);
-    yPos += 58;
+  // Draw a stylized map representation
+  const mapHeight = 50;
+  
+  // Map background with gradient effect
+  pdf.setFillColor(226, 232, 240);
+  pdf.roundedRect(margin, yPos, contentWidth, mapHeight, 3, 3, 'F');
+  
+  // Grid lines for map effect
+  pdf.setDrawColor(203, 213, 225);
+  pdf.setLineWidth(0.2);
+  for (let i = 1; i < 8; i++) {
+    pdf.line(margin + (contentWidth / 8) * i, yPos, margin + (contentWidth / 8) * i, yPos + mapHeight);
   }
+  for (let i = 1; i < 5; i++) {
+    pdf.line(margin, yPos + (mapHeight / 5) * i, margin + contentWidth, yPos + (mapHeight / 5) * i);
+  }
+  
+  // Location pin in center
+  const pinX = margin + contentWidth / 2;
+  const pinY = yPos + mapHeight / 2;
+  
+  // Pin shadow
+  pdf.setFillColor(100, 116, 139);
+  pdf.ellipse(pinX, pinY + 8, 6, 2, 'F');
+  
+  // Pin body
+  pdf.setFillColor(239, 68, 68);
+  pdf.circle(pinX, pinY - 4, 8, 'F');
+  
+  // Pin point (triangle)
+  pdf.triangle(pinX - 5, pinY, pinX + 5, pinY, pinX, pinY + 8, 'F');
+  
+  // Pin inner circle
+  pdf.setFillColor(255, 255, 255);
+  pdf.circle(pinX, pinY - 4, 4, 'F');
+  pdf.setFillColor(239, 68, 68);
+  pdf.circle(pinX, pinY - 4, 2, 'F');
+  
+  // Location label
+  pdf.setFillColor(15, 23, 42);
+  pdf.roundedRect(pinX - 30, yPos + mapHeight - 12, 60, 10, 2, 2, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`${item.country}, ${item.region}`, pinX, yPos + mapHeight - 5, { align: 'center' });
+  
+  // Coordinate labels on corners
+  pdf.setTextColor(71, 85, 105);
+  pdf.setFontSize(6);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`LAT: ${item.lat.toFixed(4)}`, margin + 3, yPos + 8);
+  pdf.text(`LON: ${item.lon.toFixed(4)}`, margin + contentWidth - 25, yPos + 8);
+  
+  yPos += mapHeight + 8;
 
   // Summary section
   pdf.setTextColor(15, 23, 42);
