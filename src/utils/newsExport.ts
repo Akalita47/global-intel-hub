@@ -463,6 +463,67 @@ export const exportNewsItemToPDF = async (item: NewsItem): Promise<void> => {
   });
   yPos += 6;
 
+  // ========== SOURCE CREDENTIALS ==========
+  addSectionHeader('SOURCE CREDENTIALS');
+  
+  checkPageBreak(35);
+  pdf.setFillColor(241, 245, 249);
+  pdf.roundedRect(margin, yPos, contentWidth, 28, 2, 2, 'F');
+  pdf.setDrawColor(203, 213, 225);
+  pdf.roundedRect(margin, yPos, contentWidth, 28, 2, 2, 'S');
+  
+  // Source name
+  pdf.setTextColor(100, 116, 139);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('SOURCE NAME:', margin + 4, yPos + 5);
+  pdf.setTextColor(15, 23, 42);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(item.source, margin + 35, yPos + 5);
+  
+  // Credibility rating
+  pdf.setTextColor(100, 116, 139);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('CREDIBILITY:', margin + 4, yPos + 11);
+  
+  const credColors: Record<string, { bg: [number, number, number]; text: [number, number, number] }> = {
+    high: { bg: [220, 252, 231], text: [22, 101, 52] },
+    medium: { bg: [254, 243, 199], text: [146, 64, 14] },
+    low: { bg: [254, 226, 226], text: [153, 27, 27] },
+  };
+  const credStyle = credColors[item.sourceCredibility] || credColors.medium;
+  pdf.setFillColor(...credStyle.bg);
+  pdf.roundedRect(margin + 35, yPos + 7, 20, 6, 1, 1, 'F');
+  pdf.setTextColor(...credStyle.text);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(item.sourceCredibility.toUpperCase(), margin + 37, yPos + 11.5);
+  
+  // Source URL
+  pdf.setTextColor(100, 116, 139);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('SOURCE LINK:', margin + 4, yPos + 17);
+  pdf.setTextColor(59, 130, 246);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  const displayUrl = item.url.length > 70 ? item.url.substring(0, 67) + '...' : item.url;
+  pdf.textWithLink(displayUrl, margin + 35, yPos + 17, { url: item.url });
+  
+  // Published date
+  pdf.setTextColor(100, 116, 139);
+  pdf.setFontSize(7);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('PUBLISHED:', margin + 4, yPos + 23);
+  pdf.setTextColor(15, 23, 42);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(format(new Date(item.publishedAt), 'yyyy-MM-dd HH:mm') + ' UTC', margin + 35, yPos + 23);
+  
+  yPos += 34;
+
   // ========== CONFIDENCE & SOURCE NOTES ==========
   addSectionHeader('CONFIDENCE & SOURCE NOTES');
   
