@@ -11,8 +11,11 @@ import {
   X,
   Share2,
   Bookmark,
-  AlertCircle
+  AlertCircle,
+  Hash,
+  Copy
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface NewsDetailProps {
   item: NewsItem;
@@ -41,6 +44,18 @@ const getConfidenceLabel = (score: number) => {
 };
 
 export function NewsDetail({ item, onClose }: NewsDetailProps) {
+  const { toast } = useToast();
+
+  const copyToken = () => {
+    if (item.token) {
+      navigator.clipboard.writeText(item.token);
+      toast({
+        title: 'Token Copied',
+        description: `${item.token} copied to clipboard`,
+      });
+    }
+  };
+
   return (
     <div className="intel-card h-full flex flex-col animate-slide-in-right">
       {/* Header */}
@@ -56,6 +71,19 @@ export function NewsDetail({ item, onClose }: NewsDetailProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-4 space-y-4">
+        {/* Token Badge */}
+        {item.token && (
+          <div 
+            className="flex items-center gap-2 p-2.5 bg-primary/10 rounded-lg border border-primary/20 cursor-pointer hover:bg-primary/15 transition-colors"
+            onClick={copyToken}
+          >
+            <Hash className="w-4 h-4 text-primary" />
+            <span className="font-mono font-semibold text-primary">{item.token}</span>
+            <Copy className="w-3.5 h-3.5 text-muted-foreground ml-auto" />
+            <span className="text-[10px] text-muted-foreground">Click to copy</span>
+          </div>
+        )}
+
         {/* Category & Confidence */}
         <div className="flex items-center justify-between">
           <Badge

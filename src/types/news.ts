@@ -5,6 +5,7 @@ export type SourceCredibility = 'high' | 'medium' | 'low';
 
 export interface NewsItem {
   id: string;
+  token: string;
   title: string;
   summary: string;
   url: string;

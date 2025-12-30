@@ -7,6 +7,7 @@ import { NewsItem, ThreatLevel, ConfidenceLevel, ActorType, SourceCredibility } 
 // Database row type
 interface NewsItemRow {
   id: string;
+  token: string | null;
   title: string;
   summary: string;
   url: string;
@@ -32,6 +33,7 @@ interface NewsItemRow {
 // Transform database row to NewsItem
 const transformRow = (row: NewsItemRow): NewsItem => ({
   id: row.id,
+  token: row.token || '',
   title: row.title,
   summary: row.summary,
   url: row.url,

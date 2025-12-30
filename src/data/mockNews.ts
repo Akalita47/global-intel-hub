@@ -5,12 +5,20 @@ const confidenceLevels: ConfidenceLevel[] = ['verified', 'developing', 'breaking
 const actorTypes: ActorType[] = ['state', 'non-state', 'organization'];
 const sourceCredibilities: SourceCredibility[] = ['high', 'medium', 'low'];
 
+// Export lists for filters
+export const regions = ['Europe', 'Asia Pacific', 'Middle East', 'Africa', 'North America', 'South America', 'Central Asia', 'Arctic', 'Oceania', 'Caucasus', 'South Asia'];
+export const categories = ['security', 'diplomacy', 'economy', 'conflict', 'humanitarian', 'technology'];
+export const sources = ['Reuters', 'AP News', 'BBC', 'Al Jazeera', 'AFP', 'DW', 'Bloomberg', 'SCMP', 'Financial Times', 'Politico EU', 'UNHCR', 'NASA', 'The Hindu', 'IOM', 'Jane\'s', 'Nikkei', 'OSCE', 'CyberScoop', 'UNFCCC', 'Maritime Executive', 'TechCrunch', 'USGS', 'EuroNews', 'UN News', 'Wired', 'FAO', 'Arctic Today', 'Africa News'];
+export const confidenceLevelsList: ConfidenceLevel[] = ['verified', 'developing', 'breaking'];
+export const actorTypesList: ActorType[] = ['state', 'non-state', 'organization'];
+
 const getRandomItem = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 // Realistic OSINT mock data with global distribution
 export const mockNewsData: NewsItem[] = [
   {
     id: '1',
+    token: 'INT-2024-0001',
     title: 'NATO Conducts Joint Military Exercise in Baltic Sea',
     summary: 'Allied forces from 12 nations participate in large-scale naval and air exercises aimed at strengthening regional defense capabilities.',
     url: 'https://example.com/nato-baltic',
@@ -31,6 +39,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '2',
+    token: 'INT-2024-0002',
     title: 'G20 Summit Addresses Global Economic Challenges',
     summary: 'World leaders convene to discuss inflation, trade policies, and sustainable development goals in annual meeting.',
     url: 'https://example.com/g20-summit',
@@ -51,6 +60,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '3',
+    token: 'INT-2024-0003',
     title: 'Cyberattack Targets Critical Infrastructure in Eastern Europe',
     summary: 'Multiple power grid systems experience coordinated disruption; investigation underway by national security agencies.',
     url: 'https://example.com/cyber-attack',
@@ -71,6 +81,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '4',
+    token: 'INT-2024-0004',
     title: 'UN Security Council Emergency Session on Regional Conflict',
     summary: 'Member states debate peacekeeping measures and humanitarian aid corridors following escalation in tensions.',
     url: 'https://example.com/un-session',
@@ -91,6 +102,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '5',
+    token: 'INT-2024-0005',
     title: 'Major Oil Pipeline Expansion Approved in Central Asia',
     summary: 'New 2,500km pipeline to increase energy exports capacity by 40%, affecting regional geopolitics.',
     url: 'https://example.com/pipeline',
@@ -111,6 +123,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '6',
+    token: 'INT-2024-0006',
     title: 'Maritime Dispute Escalates in South China Sea',
     summary: 'Naval vessels from multiple nations conduct freedom of navigation operations amid territorial claims.',
     url: 'https://example.com/scs-dispute',
@@ -131,6 +144,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '7',
+    token: 'INT-2024-0007',
     title: 'Humanitarian Crisis Deepens in Horn of Africa',
     summary: 'Drought conditions affect 15 million people; international aid organizations mobilize emergency response.',
     url: 'https://example.com/horn-africa',
@@ -151,6 +165,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '8',
+    token: 'INT-2024-0008',
     title: 'Tech Giants Face Antitrust Investigation in EU',
     summary: 'European Commission launches formal probe into market dominance and data practices of major technology firms.',
     url: 'https://example.com/eu-antitrust',
@@ -171,6 +186,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '9',
+    token: 'INT-2024-0009',
     title: 'Arctic Council Meets on Climate Security Concerns',
     summary: 'Member nations discuss melting ice caps impact on shipping routes and territorial boundaries.',
     url: 'https://example.com/arctic-council',
@@ -191,6 +207,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '10',
+    token: 'INT-2024-0010',
     title: 'Mass Protests Continue in Latin American Capital',
     summary: 'Tens of thousands demand political reforms amid economic instability; security forces deployed.',
     url: 'https://example.com/latam-protests',
@@ -211,6 +228,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '11',
+    token: 'INT-2024-0011',
     title: 'Nuclear Talks Resume in Vienna',
     summary: 'Diplomatic delegations return to negotiations on non-proliferation agreements after six-month hiatus.',
     url: 'https://example.com/vienna-talks',
@@ -231,6 +249,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '12',
+    token: 'INT-2024-0012',
     title: 'Major Earthquake Strikes Pacific Ring of Fire',
     summary: '7.2 magnitude earthquake triggers tsunami warnings; emergency services mobilized across affected areas.',
     url: 'https://example.com/earthquake',
@@ -251,6 +270,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '13',
+    token: 'INT-2024-0013',
     title: 'African Union Summit on Continental Free Trade',
     summary: 'Leaders discuss implementation challenges and opportunities of AfCFTA trade agreement.',
     url: 'https://example.com/au-summit',
@@ -271,6 +291,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '14',
+    token: 'INT-2024-0014',
     title: 'Space Debris Incident Near ISS Raises Concerns',
     summary: 'International Space Station performs evasive maneuver; calls for stronger space traffic management.',
     url: 'https://example.com/space-debris',
@@ -291,6 +312,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '15',
+    token: 'INT-2024-0015',
     title: 'Border Tensions Rise Between South Asian Neighbors',
     summary: 'Military buildup reported along disputed frontier; diplomatic channels remain open.',
     url: 'https://example.com/south-asia-border',
@@ -311,6 +333,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '16',
+    token: 'INT-2024-0016',
     title: 'Central Bank Announces Emergency Rate Decision',
     summary: 'Unexpected interest rate adjustment aims to stabilize currency amid global market volatility.',
     url: 'https://example.com/rate-decision',
@@ -331,6 +354,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '17',
+    token: 'INT-2024-0017',
     title: 'Refugee Crisis Worsens at Mediterranean Crossing',
     summary: 'Record number of arrivals recorded; EU debates burden-sharing mechanism.',
     url: 'https://example.com/mediterranean',
@@ -351,6 +375,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '18',
+    token: 'INT-2024-0018',
     title: 'Major Defense Contract Announced',
     summary: '$12 billion arms deal signed between allied nations; delivery scheduled over five years.',
     url: 'https://example.com/defense-contract',
@@ -371,6 +396,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '19',
+    token: 'INT-2024-0019',
     title: 'Rare Earth Mining Dispute in Pacific Islands',
     summary: 'Competing interests vie for strategic mineral deposits critical to tech manufacturing.',
     url: 'https://example.com/rare-earth',
@@ -391,6 +417,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '20',
+    token: 'INT-2024-0020',
     title: 'Election Monitoring Mission Deployed',
     summary: 'International observers arrive ahead of contested national elections; concerns over press freedom.',
     url: 'https://example.com/election-monitor',
@@ -411,6 +438,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '21',
+    token: 'INT-2024-0021',
     title: 'Ransomware Attack Hits Healthcare Network',
     summary: 'Hospital systems across three countries affected; patient data potentially compromised.',
     url: 'https://example.com/ransomware',
@@ -431,6 +459,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '22',
+    token: 'INT-2024-0022',
     title: 'Climate Summit Reaches Historic Agreement',
     summary: 'Nations commit to accelerated emissions targets; $100 billion climate fund established.',
     url: 'https://example.com/climate-summit',
@@ -451,6 +480,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '23',
+    token: 'INT-2024-0023',
     title: 'Oil Tanker Detained in Strategic Strait',
     summary: 'Naval forces intercept vessel amid ongoing maritime security operations; crew held.',
     url: 'https://example.com/tanker-detained',
@@ -471,6 +501,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '24',
+    token: 'INT-2024-0024',
     title: 'AI Regulation Framework Proposed',
     summary: 'Major economy introduces comprehensive artificial intelligence governance legislation.',
     url: 'https://example.com/ai-regulation',
@@ -491,6 +522,7 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '25',
+    token: 'INT-2024-0025',
     title: 'Volcanic Activity Alert Raised',
     summary: 'Seismic monitoring indicates increased magma movement; evacuation zones established.',
     url: 'https://example.com/volcano-alert',
@@ -511,109 +543,136 @@ export const mockNewsData: NewsItem[] = [
   },
   {
     id: '26',
-    title: 'Cross-Border Drug Trafficking Network Dismantled',
-    summary: 'Joint operation by five nations results in major arrests; significant seizures reported.',
-    url: 'https://example.com/drug-bust',
-    source: 'Interpol',
+    token: 'INT-2024-0026',
+    title: 'Trade Embargo Extended by Economic Bloc',
+    summary: 'Sanctions package expanded to include additional sectors; diplomatic tensions rise.',
+    url: 'https://example.com/embargo',
+    source: 'EuroNews',
     sourceCredibility: 'high',
-    publishedAt: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(),
-    lat: 19.4326,
-    lon: -99.1332,
-    country: 'Mexico',
-    region: 'North America',
-    tags: ['crime', 'drugs', 'security'],
-    confidenceScore: 0.90,
+    publishedAt: new Date(Date.now() - 19 * 60 * 60 * 1000).toISOString(),
+    lat: 50.1109,
+    lon: 8.6821,
+    country: 'Germany',
+    region: 'Europe',
+    tags: ['sanctions', 'trade', 'economy'],
+    confidenceScore: 0.93,
     confidenceLevel: 'verified',
     threatLevel: 'elevated',
-    actorType: 'non-state',
-    subCategory: 'Crime',
-    category: 'security'
-  },
-  {
-    id: '27',
-    title: 'Sovereign Wealth Fund Restructures Portfolio',
-    summary: 'Major investment shifts signal changing global economic priorities; tech sector focus.',
-    url: 'https://example.com/swf-portfolio',
-    source: 'Financial Times',
-    sourceCredibility: 'high',
-    publishedAt: new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString(),
-    lat: 24.4539,
-    lon: 54.3773,
-    country: 'UAE',
-    region: 'Middle East',
-    tags: ['finance', 'investment', 'economy'],
-    confidenceScore: 0.89,
-    confidenceLevel: 'verified',
-    threatLevel: 'low',
-    actorType: 'state',
-    subCategory: 'Investment',
+    actorType: 'organization',
+    subCategory: 'Sanctions',
     category: 'economy'
   },
   {
-    id: '28',
-    title: 'Military Coup Attempt Reported',
-    summary: 'Government claims attempted overthrow thwarted; curfew imposed in capital city.',
-    url: 'https://example.com/coup-attempt',
-    source: 'AFP',
+    id: '27',
+    token: 'INT-2024-0027',
+    title: 'Peacekeeping Mission Mandate Extended',
+    summary: 'UN Security Council votes to continue stabilization operations for additional 12 months.',
+    url: 'https://example.com/peacekeeping',
+    source: 'UN News',
     sourceCredibility: 'high',
-    publishedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-    lat: 6.5244,
-    lon: 3.3792,
-    country: 'Nigeria',
+    publishedAt: new Date(Date.now() - 32 * 60 * 60 * 1000).toISOString(),
+    lat: 4.3947,
+    lon: 18.5582,
+    country: 'Central African Republic',
     region: 'Africa',
-    tags: ['coup', 'military', 'political'],
-    confidenceScore: 0.78,
-    confidenceLevel: 'breaking',
-    threatLevel: 'critical',
-    actorType: 'state',
-    subCategory: 'Coup',
-    category: 'conflict'
+    tags: ['UN', 'peacekeeping', 'security'],
+    confidenceScore: 0.98,
+    confidenceLevel: 'verified',
+    threatLevel: 'high',
+    actorType: 'organization',
+    subCategory: 'Peacekeeping',
+    category: 'diplomacy'
   },
   {
-    id: '29',
-    title: 'Submarine Cable Damage Disrupts Communications',
-    summary: 'Undersea infrastructure damage causes internet slowdowns across multiple regions.',
-    url: 'https://example.com/cable-damage',
-    source: 'TeleGeography',
+    id: '28',
+    token: 'INT-2024-0028',
+    title: 'Submarine Cable Cut Disrupts Communications',
+    summary: 'Undersea fiber optic link severed in suspected sabotage; backup routes activated.',
+    url: 'https://example.com/cable-cut',
+    source: 'Wired',
     sourceCredibility: 'medium',
-    publishedAt: new Date(Date.now() - 13 * 60 * 60 * 1000).toISOString(),
-    lat: 1.3521,
-    lon: 103.8198,
-    country: 'Singapore',
-    region: 'Asia Pacific',
-    tags: ['infrastructure', 'communications', 'technology'],
-    confidenceScore: 0.91,
-    confidenceLevel: 'verified',
-    threatLevel: 'elevated',
-    actorType: 'organization',
-    subCategory: 'Infrastructure',
+    publishedAt: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(),
+    lat: 59.9139,
+    lon: 10.7522,
+    country: 'Norway',
+    region: 'Europe',
+    tags: ['infrastructure', 'communications', 'security'],
+    confidenceScore: 0.79,
+    confidenceLevel: 'developing',
+    threatLevel: 'high',
+    actorType: 'non-state',
+    subCategory: 'Infrastructure Attack',
     category: 'technology'
   },
   {
-    id: '30',
-    title: 'Peace Talks Show Progress in Regional Conflict',
-    summary: 'Mediation efforts yield preliminary ceasefire agreement; humanitarian corridors planned.',
-    url: 'https://example.com/peace-talks',
-    source: 'UN News',
+    id: '29',
+    token: 'INT-2024-0029',
+    title: 'Food Security Summit Addresses Global Hunger',
+    summary: 'World leaders pledge increased agricultural investment to combat rising food insecurity.',
+    url: 'https://example.com/food-summit',
+    source: 'FAO',
     sourceCredibility: 'high',
-    publishedAt: new Date(Date.now() - 4.5 * 60 * 60 * 1000).toISOString(),
-    lat: 46.2044,
-    lon: 6.1432,
-    country: 'Switzerland',
+    publishedAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+    lat: 41.9028,
+    lon: 12.4964,
+    country: 'Italy',
     region: 'Europe',
-    tags: ['peace', 'negotiations', 'conflict'],
-    confidenceScore: 0.87,
-    confidenceLevel: 'developing',
+    tags: ['food', 'humanitarian', 'agriculture'],
+    confidenceScore: 0.95,
+    confidenceLevel: 'verified',
     threatLevel: 'elevated',
     actorType: 'organization',
-    subCategory: 'Peace Talks',
-    category: 'diplomacy'
+    subCategory: 'Food Security',
+    category: 'humanitarian'
+  },
+  {
+    id: '30',
+    token: 'INT-2024-0030',
+    title: 'Military Coup Attempt Reported',
+    summary: 'Government forces report repelling attempted seizure of key installations; curfew imposed.',
+    url: 'https://example.com/coup-attempt',
+    source: 'AFP',
+    sourceCredibility: 'high',
+    publishedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
+    lat: 12.6392,
+    lon: -8.0029,
+    country: 'Mali',
+    region: 'Africa',
+    tags: ['coup', 'military', 'political'],
+    confidenceScore: 0.85,
+    confidenceLevel: 'breaking',
+    threatLevel: 'critical',
+    actorType: 'state',
+    subCategory: 'Political Instability',
+    category: 'conflict'
   }
 ];
 
-export const regions = ['Europe', 'North America', 'South America', 'Asia Pacific', 'Middle East', 'Africa', 'Central Asia', 'South Asia', 'Oceania', 'Arctic', 'Caucasus'];
-export const categories = ['security', 'diplomacy', 'economy', 'conflict', 'humanitarian', 'technology'];
-export const sources = ['Reuters', 'AP News', 'BBC', 'Al Jazeera', 'Financial Times', 'SCMP', 'UNHCR', 'Politico EU', 'DW', 'Bloomberg', 'NASA', 'Interpol'];
-export const threatLevelsList: ThreatLevel[] = ['low', 'elevated', 'high', 'critical'];
-export const confidenceLevelsList: ConfidenceLevel[] = ['verified', 'developing', 'breaking'];
-export const actorTypesList: ActorType[] = ['state', 'non-state', 'organization'];
+// Function to generate additional mock data for testing
+export const generateMockNews = (count: number): NewsItem[] => {
+  const categories: NewsItem['category'][] = ['security', 'diplomacy', 'economy', 'conflict', 'humanitarian', 'technology'];
+  const sources = ['Reuters', 'AP News', 'BBC', 'Al Jazeera', 'AFP', 'DW', 'Bloomberg', 'SCMP'];
+  const regions = ['Europe', 'Asia Pacific', 'Middle East', 'Africa', 'North America', 'South America', 'Central Asia'];
+  
+  return Array.from({ length: count }, (_, i) => ({
+    id: `generated-${i}`,
+    token: `INT-2024-${String(31 + i).padStart(4, '0')}`,
+    title: `Generated Intel Report ${i + 1}`,
+    summary: `This is an automatically generated intelligence report for testing purposes. Report number ${i + 1}.`,
+    url: `https://example.com/report-${i}`,
+    source: getRandomItem(sources),
+    sourceCredibility: getRandomItem(sourceCredibilities),
+    publishedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    lat: (Math.random() - 0.5) * 180,
+    lon: (Math.random() - 0.5) * 360,
+    country: 'Various',
+    region: getRandomItem(regions),
+    tags: ['generated', 'test', 'data'],
+    confidenceScore: Math.random() * 0.4 + 0.6,
+    confidenceLevel: getRandomItem(confidenceLevels),
+    threatLevel: getRandomItem(threatLevels),
+    actorType: getRandomItem(actorTypes),
+    subCategory: 'Test Data',
+    category: getRandomItem(categories)
+  }));
+};

@@ -91,6 +91,7 @@ export type Database = {
           tags: string[]
           threat_level: Database["public"]["Enums"]["threat_level"]
           title: string
+          token: string | null
           updated_at: string
           url: string
           user_id: string
@@ -114,6 +115,7 @@ export type Database = {
           tags?: string[]
           threat_level?: Database["public"]["Enums"]["threat_level"]
           title: string
+          token?: string | null
           updated_at?: string
           url: string
           user_id: string
@@ -137,6 +139,7 @@ export type Database = {
           tags?: string[]
           threat_level?: Database["public"]["Enums"]["threat_level"]
           title?: string
+          token?: string | null
           updated_at?: string
           url?: string
           user_id?: string
