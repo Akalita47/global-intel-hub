@@ -213,10 +213,10 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
                               item.confidenceLevel === 'developing' ? '#eab308' : '#ef4444';
 
       const popupContent = `
-        <div style="font-family: system-ui, sans-serif; max-width: 300px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+        <div style="font-family: system-ui, sans-serif; max-width: 300px; background: #1a1a2e; padding: 12px; border-radius: 8px; color: #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
             <span style="
-              padding: 2px 8px;
+              padding: 3px 8px;
               border-radius: 4px;
               font-size: 10px;
               font-weight: 600;
@@ -224,9 +224,10 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
               letter-spacing: 0.5px;
               background: ${categoryColor}30;
               color: ${categoryColor};
+              border: 1px solid ${categoryColor}50;
             ">${item.category}</span>
             <span style="
-              padding: 2px 8px;
+              padding: 3px 8px;
               border-radius: 4px;
               font-size: 10px;
               font-weight: 600;
@@ -234,25 +235,27 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
               letter-spacing: 0.5px;
               background: ${confidenceColor}30;
               color: ${confidenceColor};
+              border: 1px solid ${confidenceColor}50;
             ">${item.confidenceLevel}</span>
-            <span style="font-size: 11px; color: #666;">
+            <span style="font-size: 11px; color: #94a3b8; margin-left: auto;">
               ${formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}
             </span>
           </div>
-          <h3 style="font-size: 13px; font-weight: 600; margin: 0 0 8px 0; line-height: 1.3; color: #111;">
+          <h3 style="font-size: 14px; font-weight: 600; margin: 0 0 10px 0; line-height: 1.4; color: #f1f5f9;">
             ${item.title}
           </h3>
-          <p style="font-size: 11px; color: #555; margin: 0 0 10px 0; line-height: 1.4;">
-            ${item.summary.slice(0, 120)}...
+          <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 12px 0; line-height: 1.5;">
+            ${item.summary.length > 150 ? item.summary.slice(0, 150) + '...' : item.summary}
           </p>
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-            <span style="font-size: 10px; font-family: monospace; color: #777;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; padding-top: 10px; border-top: 1px solid #334155;">
+            <span style="font-size: 10px; font-family: monospace; color: #64748b;">
               ${item.source} • ${item.country}
             </span>
             <a href="${item.url}" target="_blank" rel="noopener" style="
               font-size: 11px;
-              color: #0066cc;
+              color: #60a5fa;
               text-decoration: none;
+              font-weight: 500;
             ">View Source →</a>
           </div>
         </div>
