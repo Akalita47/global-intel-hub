@@ -5,7 +5,19 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Clock, Trash2, Search, Hash } from 'lucide-react';
+import { 
+  MapPin, 
+  Clock, 
+  Trash2, 
+  Search, 
+  Hash, 
+  ShieldCheck, 
+  ShieldAlert,
+  AlertTriangle,
+  TrendingUp,
+  ExternalLink,
+  ChevronRight
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface NewsFeedProps {
@@ -22,6 +34,25 @@ const categoryColors: Record<string, string> = {
   conflict: 'bg-intel-red/20 text-red-400 border-intel-red/30',
   humanitarian: 'bg-intel-amber/20 text-intel-amber border-intel-amber/30',
   technology: 'bg-intel-purple/20 text-purple-400 border-intel-purple/30',
+};
+
+const threatLevelConfig: Record<string, { color: string; icon: typeof AlertTriangle; label: string }> = {
+  critical: { color: 'text-red-500 bg-red-500/10 border-red-500/30', icon: ShieldAlert, label: 'CRITICAL' },
+  high: { color: 'text-orange-500 bg-orange-500/10 border-orange-500/30', icon: AlertTriangle, label: 'HIGH' },
+  elevated: { color: 'text-amber-500 bg-amber-500/10 border-amber-500/30', icon: TrendingUp, label: 'ELEVATED' },
+  low: { color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30', icon: ShieldCheck, label: 'LOW' },
+};
+
+const confidenceLevelConfig: Record<string, { color: string; label: string }> = {
+  verified: { color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/40', label: 'VERIFIED' },
+  developing: { color: 'text-amber-400 bg-amber-500/15 border-amber-500/40', label: 'DEVELOPING' },
+  breaking: { color: 'text-red-400 bg-red-500/15 border-red-500/40', label: 'BREAKING' },
+};
+
+const sourceCredibilityConfig: Record<string, { color: string; label: string }> = {
+  high: { color: 'text-emerald-400', label: 'High Credibility' },
+  medium: { color: 'text-amber-400', label: 'Medium Credibility' },
+  low: { color: 'text-red-400', label: 'Low Credibility' },
 };
 
 export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }: NewsFeedProps) {
@@ -81,69 +112,99 @@ export function NewsFeed({ newsItems, onSelectItem, selectedItem, onDeleteItem }
               <p className="text-xs mt-1">Click "Add Intel" to create one.</p>
             </div>
           ) : (
-            filteredAndSortedNews.map((item) => (
-              <article
-                key={item.id}
-                onClick={() => onSelectItem(item)}
-                className={`p-3 rounded-lg cursor-pointer transition-all group relative ${
-                  selectedItem?.id === item.id
-                    ? 'bg-primary/10 border border-primary/30'
-                    : 'bg-secondary/30 border border-transparent hover:bg-secondary/50 hover:border-border'
-                }`}
-              >
-                {/* Delete button - only show for items user can delete */}
-                {onDeleteItem && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive"
-                    onClick={(e) => handleDelete(e, item.id)}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                )}
-                
-                {/* Token Badge */}
-                {item.token && (
-                  <div className="flex items-center gap-1 mb-1.5 pr-6">
-                    <Hash className="w-3 h-3 text-primary" />
-                    <span className="text-[10px] font-mono font-medium text-primary">
-                      {item.token}
-                    </span>
+            filteredAndSortedNews.map((item) => {
+              const threatConfig = threatLevelConfig[item.threatLevel] || threatLevelConfig.low;
+              const ThreatIcon = threatConfig.icon;
+              const confidenceConfig = confidenceLevelConfig[item.confidenceLevel] || confidenceLevelConfig.developing;
+              const credibilityConfig = sourceCredibilityConfig[item.sourceCredibility] || sourceCredibilityConfig.medium;
+              
+              return (
+                <article
+                  key={item.id}
+                  onClick={() => onSelectItem(item)}
+                  className={`rounded-xl cursor-pointer transition-all group relative overflow-hidden ${
+                    selectedItem?.id === item.id
+                      ? 'bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 border-2 border-primary/40 shadow-lg shadow-primary/10'
+                      : 'bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 border border-border/50 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5'
+                  }`}
+                >
+                  {/* Threat Level Accent Bar */}
+                  <div className={`h-1 w-full ${
+                    item.threatLevel === 'critical' ? 'bg-gradient-to-r from-red-600 via-red-500 to-red-400' :
+                    item.threatLevel === 'high' ? 'bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400' :
+                    item.threatLevel === 'elevated' ? 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-400' :
+                    'bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400'
+                  }`} />
+
+                  <div className="p-3">
+                    {/* Delete button - only show for items user can delete */}
+                    {onDeleteItem && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-3 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive z-10"
+                        onClick={(e) => handleDelete(e, item.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    )}
+
+                    {/* Top Row: Category + Confidence Level + Time */}
+                    <div className="flex items-center gap-2 mb-2.5 flex-wrap">
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] uppercase tracking-wider font-semibold ${categoryColors[item.category]}`}
+                      >
+                        {item.category}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] uppercase tracking-wider font-semibold ${confidenceConfig.color}`}
+                      >
+                        {confidenceConfig.label}
+                      </Badge>
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
+                        <Clock className="w-3 h-3" />
+                        {formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="font-semibold text-sm leading-snug line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h3>
+
+                    {/* Summary/Brief */}
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
+                      {item.summary}
+                    </p>
+
+                    {/* Bottom Row: Location + Source + Threat Level */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/30">
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-primary/70" />
+                          {item.country}
+                        </span>
+                        <span className={`flex items-center gap-1 ${credibilityConfig.color}`}>
+                          {item.source}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 ${threatConfig.color}`}
+                        >
+                          <ThreatIcon className="w-2.5 h-2.5 mr-0.5" />
+                          {threatConfig.label}
+                        </Badge>
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    </div>
                   </div>
-                )}
-
-                {/* Time and Category */}
-                <div className="flex items-center justify-between gap-2 mb-2 pr-6">
-                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] uppercase tracking-wider ${categoryColors[item.category]}`}
-                  >
-                    {item.category}
-                  </Badge>
-                </div>
-
-                {/* Title */}
-                <h3 className="font-medium text-xs leading-tight line-clamp-2 mb-1">
-                  {item.title}
-                </h3>
-
-                {/* Summary/Brief */}
-                <p className="text-[10px] text-muted-foreground line-clamp-2 mb-2">
-                  {item.summary}
-                </p>
-
-                {/* Location */}
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <MapPin className="w-3 h-3" />
-                  {item.country}
-                </div>
-              </article>
-            ))
+                </article>
+              );
+            })
           )}
         </div>
       </ScrollArea>
