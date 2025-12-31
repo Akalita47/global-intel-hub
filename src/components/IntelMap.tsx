@@ -212,51 +212,63 @@ export function IntelMap({ newsItems, onSelectItem, selectedItem }: IntelMapProp
       const confidenceColor = item.confidenceLevel === 'verified' ? '#22c55e' : 
                               item.confidenceLevel === 'developing' ? '#eab308' : '#ef4444';
 
+      const threatColor = item.threatLevel === 'critical' ? '#ef4444' : 
+                         item.threatLevel === 'high' ? '#f97316' : 
+                         item.threatLevel === 'elevated' ? '#eab308' : '#22c55e';
+      const threatLabel = item.threatLevel.charAt(0).toUpperCase() + item.threatLevel.slice(1);
+
       const popupContent = `
-        <div style="font-family: system-ui, sans-serif; max-width: 300px; background: #1a1a2e; padding: 12px; border-radius: 8px; color: #e2e8f0;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-            <span style="
-              padding: 3px 8px;
-              border-radius: 4px;
-              font-size: 10px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-              background: ${categoryColor}30;
-              color: ${categoryColor};
-              border: 1px solid ${categoryColor}50;
-            ">${item.category}</span>
-            <span style="
-              padding: 3px 8px;
-              border-radius: 4px;
-              font-size: 10px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-              background: ${confidenceColor}30;
-              color: ${confidenceColor};
-              border: 1px solid ${confidenceColor}50;
-            ">${item.confidenceLevel}</span>
-            <span style="font-size: 11px; color: #94a3b8; margin-left: auto;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; width: 320px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+          
+          <!-- Threat Level Header -->
+          <div style="background: ${threatColor}; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+              ${threatLabel} Risk
+            </span>
+            <span style="color: rgba(255,255,255,0.9); font-size: 11px;">
               ${formatDistanceToNow(new Date(item.publishedAt), { addSuffix: true })}
             </span>
           </div>
-          <h3 style="font-size: 14px; font-weight: 600; margin: 0 0 10px 0; line-height: 1.4; color: #f1f5f9;">
-            ${item.title}
-          </h3>
-          <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 12px 0; line-height: 1.5;">
-            ${item.summary.length > 150 ? item.summary.slice(0, 150) + '...' : item.summary}
-          </p>
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; padding-top: 10px; border-top: 1px solid #334155;">
-            <span style="font-size: 10px; font-family: monospace; color: #64748b;">
-              ${item.source} • ${item.country}
-            </span>
-            <a href="${item.url}" target="_blank" rel="noopener" style="
-              font-size: 11px;
-              color: #60a5fa;
-              text-decoration: none;
-              font-weight: 500;
-            ">View Source →</a>
+          
+          <!-- Content -->
+          <div style="padding: 16px;">
+            <!-- Title -->
+            <h3 style="font-size: 15px; font-weight: 600; margin: 0 0 10px 0; line-height: 1.4; color: #1e293b;">
+              ${item.title}
+            </h3>
+            
+            <!-- Summary -->
+            <p style="font-size: 13px; color: #475569; margin: 0 0 14px 0; line-height: 1.6;">
+              ${item.summary.length > 180 ? item.summary.slice(0, 180) + '...' : item.summary}
+            </p>
+            
+            <!-- Location & Category -->
+            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+              <span style="
+                display: inline-flex; align-items: center; gap: 4px;
+                padding: 5px 10px; border-radius: 6px;
+                font-size: 11px; font-weight: 500;
+                background: #f1f5f9; color: #475569;
+              ">📍 ${item.country}</span>
+              <span style="
+                display: inline-flex; align-items: center;
+                padding: 5px 10px; border-radius: 6px;
+                font-size: 11px; font-weight: 600; text-transform: capitalize;
+                background: ${categoryColor}15; color: ${categoryColor};
+              ">${item.category}</span>
+            </div>
+            
+            <!-- Footer -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+              <span style="font-size: 11px; color: #94a3b8;">
+                Source: ${item.source}
+              </span>
+              <a href="${item.url}" target="_blank" rel="noopener" style="
+                display: inline-flex; align-items: center; gap: 4px;
+                font-size: 12px; font-weight: 600;
+                color: #3b82f6; text-decoration: none;
+              ">Read More →</a>
+            </div>
           </div>
         </div>
       `;
