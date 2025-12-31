@@ -42,7 +42,6 @@ export function useUserRole() {
   }, [user]);
 
   const isAnalyst = role === 'analyst';
-  const isClient = role === 'client';
 
-  return { role, isAnalyst, isClient, loading };
+  return { role, isAnalyst, loading };
 }
