@@ -15,8 +15,6 @@ import { CreateNewsDialog } from '@/components/CreateNewsDialog';
 import { CreateNewsItemInput } from '@/hooks/useNewsItems';
 import { ExportMenu } from '@/components/ExportMenu';
 import { NewsItem } from '@/types/news';
-import { RoleBadge } from '@/components/RoleBadge';
-import { useUserRole } from '@/hooks/useUserRole';
 import { NotificationsPanel } from '@/components/NotificationsPanel';
 import { UserSettings } from '@/components/UserSettings';
 
@@ -32,7 +30,7 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { role } = useUserRole();
+  
 
   const handleSignOut = async () => {
     await signOut();
@@ -73,7 +71,6 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
 
       {/* Right section */}
       <div className="flex items-center gap-2">
-        <RoleBadge role={role} />
         
         {onCreateNews && (
           <CreateNewsDialog onCreate={onCreateNews} />
@@ -108,10 +105,7 @@ export function Header({ onToggleSidebar, showSidebar, onCreateNews, newsItems =
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">Agent Profile</p>
-                  <RoleBadge role={role} />
-                </div>
+                <p className="text-sm font-medium">Agent Profile</p>
                 <p className="text-xs text-muted-foreground truncate">
                   {user?.email}
                 </p>
